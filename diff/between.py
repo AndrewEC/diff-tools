@@ -6,7 +6,7 @@ import click
 from diff.tree import PathTree, build_path_tree
 from diff.find import find_missing_paths_between_trees, find_changed_files, find_similar_paths_between_trees
 from diff.checksum import calculate_checksums_of_two_trees
-from diff.util import path_without_drive_letter, valid_path, FILE, log_exception
+from diff.util import path_without_drive_letter, valid_path, DIRECTORY, log_exception
 
 
 def _print_missing_files_and_folders(missing_paths: List[PathTree], first_drive: Path, second_drive: Path):
@@ -40,7 +40,7 @@ def _calculate_checksums(first_tree: PathTree, second_tree: PathTree):
 
 
 @log_exception
-@valid_path(FILE)
+@valid_path(DIRECTORY)
 def _between(first_drive_path: Path, second_drive_path: Path, checksum: bool):
     first_tree = build_path_tree(first_drive_path)
     second_tree = build_path_tree(second_drive_path)
