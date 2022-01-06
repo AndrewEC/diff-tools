@@ -5,7 +5,7 @@ import click
 
 from diff.tree import PathTree
 import diff.tree as path_tree
-from diff.util import extract_path_to_drive_letter
+from diff.util import extract_path_to_drive_letter, FILE, valid_path, log_exception
 import diff.find as find
 
 
@@ -39,14 +39,10 @@ def _print_paths_with_changed_files(changed_paths: List[PathTree]):
         print(f'The file [{path.path}] has changed since last scan.')
 
 
-@click.command('changes')
-@click.argument('scan')
-@click.option('--checksum', '-c', is_flag=True)
-def changes(scan: str, checksum: bool):
-    if not Path(scan).is_file():
-        raise Exception(f'The path [{scan}] either doesn\'t exist or does not point to a file.')
-
-    with open(scan, 'r') as file:
+@log_exception
+@valid_path(FILE)
+def _changes(scan_results: Path, checksum: bool):
+    with open(scan_results, 'r') as file:
         contents = '\n'.join(file.readlines())
     source_tree = path_tree.from_yaml_string(contents)
 
@@ -65,3 +61,10 @@ def changes(scan: str, checksum: bool):
     print('\n===== ===== ===== ===== =====\n')
     _print_paths_with_changed_files(changed_paths)
     print('\n===== ===== ===== ===== =====\n')
+
+
+@click.command('changes')
+@click.argument('scan')
+@click.option('--checksum', '-c', is_flag=True)
+def changes(scan: str, checksum: bool):
+    _changes(scan, checksum)

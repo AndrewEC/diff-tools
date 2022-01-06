@@ -6,7 +6,7 @@ import click
 from diff.tree import PathTree, build_path_tree
 from diff.find import find_missing_paths_between_trees, find_changed_files, find_similar_paths_between_trees
 from diff.checksum import calculate_checksums_of_two_trees
-from diff.util import path_without_drive_letter
+from diff.util import path_without_drive_letter, valid_path, FILE, log_exception
 
 
 def _print_missing_files_and_folders(missing_paths: List[PathTree], first_drive: Path, second_drive: Path):
@@ -30,7 +30,7 @@ def _print_changed_files(differences: List[PathTree]):
 
 def _calculate_checksums(first_tree: PathTree, second_tree: PathTree):
     def similar_paths_at_index(index: int, similar: List[Tuple[PathTree, PathTree]]) -> List[PathTree]:
-        return [path_tree[index] for path_tree in similar if path_tree[0].path.stat().st_size != path_tree[1].path.stat().st_size]
+        return [path_tree[index] for path_tree in similar if path_tree[0].path.stat().st_size == path_tree[1].path.stat().st_size]
 
     similar_paths = find_similar_paths_between_trees(first_tree, second_tree)
     first_tree_paths = similar_paths_at_index(0, similar_paths)
@@ -39,20 +39,9 @@ def _calculate_checksums(first_tree: PathTree, second_tree: PathTree):
     calculate_checksums_of_two_trees(first_tree_paths, second_tree_paths)
 
 
-@click.command('between')
-@click.argument('first_drive')
-@click.argument('second_drive')
-@click.option('--checksum', '-c', is_flag=True)
-def between(first_drive: str, second_drive: str, checksum: bool):
-    first_drive_path = Path(first_drive)
-    second_drive_path = Path(second_drive)
-
-    if not first_drive_path.is_dir():
-        raise Exception(f'The path [{first_drive}] does not point to a file or the path does not exist.')
-
-    if not second_drive_path.is_dir():
-        raise Exception(f'The path [{second_drive}] does not point to a file or the path does not exist.')
-
+@log_exception
+@valid_path(FILE)
+def _between(first_drive_path: Path, second_drive_path: Path, checksum: bool):
     first_tree = build_path_tree(first_drive_path)
     second_tree = build_path_tree(second_drive_path)
 
@@ -70,3 +59,11 @@ def between(first_drive: str, second_drive: str, checksum: bool):
     print('\n===== ===== ===== ===== =====\n')
     _print_changed_files(changed_files)
     print('\n===== ===== ===== ===== =====\n')
+
+
+@click.command('between')
+@click.argument('first_drive')
+@click.argument('second_drive')
+@click.option('--checksum', '-c', is_flag=True)
+def between(first_drive: str, second_drive: str, checksum: bool):
+    _between(first_drive, second_drive, checksum)
