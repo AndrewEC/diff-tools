@@ -4,9 +4,10 @@ from pathlib import Path
 import click
 
 from diff.tree import PathTree, build_path_tree
-from diff.find import find_missing_paths_between_trees, find_changed_files, find_similar_paths_between_trees
+from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees, find_changed_files
+from diff.util import path_without_drive_letter
+from diff.util.decorators import valid_path, DIRECTORY, log_exception
 from diff.checksum import calculate_checksums_of_two_trees
-from diff.util import path_without_drive_letter, valid_path, DIRECTORY, log_exception
 
 
 def _print_missing_files_and_folders(missing_paths: List[PathTree], first_drive: Path, second_drive: Path):
@@ -28,11 +29,11 @@ def _print_changed_files(differences: List[PathTree]):
         print(f'Both drives contain a file at [{path_without_drive_letter(difference.path)}] but they are different')
 
 
-def _calculate_checksums(first_tree: PathTree, second_tree: PathTree):
+def _calculate_checksums_of_similar_files(first_tree: PathTree, second_tree: PathTree):
     def similar_paths_at_index(index: int, similar: List[Tuple[PathTree, PathTree]]) -> List[PathTree]:
-        return [path_tree[index] for path_tree in similar if path_tree[0].path.stat().st_size == path_tree[1].path.stat().st_size]
+        return [path_tree[index] for path_tree in similar]
 
-    similar_paths = find_similar_paths_between_trees(first_tree, second_tree)
+    similar_paths = find_similar_paths_between_trees(first_tree, second_tree, True)
     first_tree_paths = similar_paths_at_index(0, similar_paths)
     second_tree_paths = similar_paths_at_index(1, similar_paths)
     print(f'Calculating checksums for [{len(similar_paths)}] files common between both drives.')
@@ -40,17 +41,17 @@ def _calculate_checksums(first_tree: PathTree, second_tree: PathTree):
 
 
 @log_exception
-@valid_path(DIRECTORY)
+@valid_path(DIRECTORY, DIRECTORY)
 def _between(first_drive_path: Path, second_drive_path: Path, checksum: bool):
     first_tree = build_path_tree(first_drive_path)
     second_tree = build_path_tree(second_drive_path)
 
     if checksum:
-        _calculate_checksums(first_tree, second_tree)
+        _calculate_checksums_of_similar_files(first_tree, second_tree)
 
     first_missing = find_missing_paths_between_trees(first_tree, second_tree)
     second_missing = find_missing_paths_between_trees(second_tree, first_tree)
-    changed_files = find_changed_files(first_tree, second_tree, checksum)
+    changed_files = find_changed_files(first_tree, second_tree)
 
     print('\n===== ===== ===== ===== =====\n')
     _print_missing_files_and_folders(first_missing, first_drive_path, second_drive_path)

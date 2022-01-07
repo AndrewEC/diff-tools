@@ -2,14 +2,14 @@ from pathlib import Path
 
 import click
 
-import diff.checksum as check
-from diff.util import valid_path, FILE, log_exception
+from diff.checksum import calculate_checksum
+from diff.util.decorators import valid_path, FILE, log_exception
 
 
 @log_exception
 @valid_path(FILE)
 def _fingerprint(file_path: Path):
-    checksum_string = check.calculate_checksum(file_path)
+    checksum_string = calculate_checksum(file_path)
 
     print('\n===== ===== ===== ===== =====\n')
     print(f'Checksum of file is:\n\t{checksum_string}')

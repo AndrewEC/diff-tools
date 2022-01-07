@@ -35,7 +35,7 @@ def build_path_tree(root_path: Path) -> PathTree:
     return root
 
 
-def rebuild_tree_from_drive_contents(source_tree: PathTree) -> Tuple[Path, PathTree]:
-    drive_path = extract_path_to_drive_letter(source_tree)
+def rebuild_tree_from_drive_contents(source_tree: PathTree, override: Path = None) -> Tuple[Path, PathTree]:
+    drive_path = extract_path_to_drive_letter(source_tree) if override is None else override
     current_tree = build_path_tree(drive_path)
     return drive_path, current_tree
