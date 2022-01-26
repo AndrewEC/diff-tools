@@ -51,7 +51,7 @@ def _print_new_files_and_folders(new_paths: List[PathTree]):
         if new_path.represents_directory():
             print(f'A new directory was found at: [{new_path.path}]')
         else:
-            print(f'A new file was found at: [{new_path.path}].')
+            print(f'A new file was found at: [{new_path.path}]')
 
 
 def _print_paths_with_changed_files(changed_paths: List[PathTree]):

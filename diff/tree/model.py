@@ -30,3 +30,17 @@ class PathTree:
 
     def represents_directory(self) -> bool:
         return len(self.children) > 0
+
+    def __iter__(self):
+        def root_name(path: Path):
+            if path.parent == path:
+                return str(path)
+            return str(path.name)
+
+        if self.represents_directory():
+            yield root_name(self.path), list(map(dict, self.children))
+        else:
+            yield 'name', self.path.name
+            yield 'size', self.size
+            if self.checksum is not None:
+                yield 'checksum', self.checksum

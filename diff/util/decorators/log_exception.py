@@ -3,6 +3,6 @@ def log_exception(function):
         try:
             return function(*args, **kwargs)
         except Exception as e:
-            print(e)
+            print(f'An error occurred that prevented this action from completing: [{e}]')
             return None
     return wrapper

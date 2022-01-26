@@ -8,9 +8,9 @@ from ..model import PathTree
 
 def from_yaml_string(yaml_string: str) -> PathTree:
     parsed = yaml.safe_load(yaml_string)
-    first_available_key = next((_ for _ in parsed[0].keys()))
+    first_available_key = next((_ for _ in parsed.keys()))
     root = PathTree(Path(first_available_key))
-    _append_child_paths_from_element(parsed[0][first_available_key], root)
+    _append_child_paths_from_element(parsed[first_available_key], root)
     return root
 
 
