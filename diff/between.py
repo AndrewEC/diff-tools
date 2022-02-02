@@ -5,8 +5,7 @@ import click
 
 from diff.tree import PathTree, build_path_tree
 from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees, find_changed_files
-from diff.util import path_without_drive_letter
-from diff.util.decorators import valid_path, DIRECTORY, log_exception
+from diff.util.decorators import valid_path, PathType, log_exception
 from diff.checksum import calculate_checksums_of_two_trees
 
 
@@ -16,17 +15,19 @@ def _print_missing_files_and_folders(missing_paths: List[PathTree], first_drive:
 
     for missing_path in missing_paths:
         if missing_path.represents_directory():
-            print(f'Directory found at [{missing_path.path}] is missing from drive [{second_drive}]')
+            print(f'Directory found at [{missing_path.path}] is missing from [{second_drive}]')
         else:
-            print(f'File found at [{missing_path.path}] is missing from drive [{second_drive}]')
+            print(f'File found at [{missing_path.path}] is missing from [{second_drive}]')
 
 
-def _print_changed_files(differences: List[PathTree]):
+def _print_changed_files(differences: List[Tuple[PathTree, PathTree]]):
     if len(differences) == 0:
         print('No files find were found.')
 
     for difference in differences:
-        print(f'Both drives contain a file at [{path_without_drive_letter(difference.path)}] but they are different')
+        print(f'Two similarly named files that contain different contents were found:')
+        for diff in difference:
+            print(f'\t[{diff.path}]')
 
 
 def _calculate_checksums_of_similar_files(first_tree: PathTree, second_tree: PathTree):
@@ -41,7 +42,7 @@ def _calculate_checksums_of_similar_files(first_tree: PathTree, second_tree: Pat
 
 
 @log_exception
-@valid_path(DIRECTORY, DIRECTORY)
+@valid_path(PathType.Directory, PathType.Directory)
 def _between(first_drive_path: Path, second_drive_path: Path, checksum: bool):
     first_tree = build_path_tree(first_drive_path)
     second_tree = build_path_tree(second_drive_path)

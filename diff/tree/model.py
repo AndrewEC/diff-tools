@@ -5,16 +5,18 @@ from pathlib import Path
 
 class PathTree:
 
-    def __init__(self, path: Path, size=-1, checksum=None):
+    def __init__(self, path: Path, size=-1, checksum=None, parent: PathTree = None):
         self.path = path
         self.size = path.stat().st_size if path.is_file() and size == -1 else size
         self.children: List[PathTree] = []
         self.checksum = checksum
+        self.parent = parent
 
     def add_child(self, path: Path):
-        self.children.append(PathTree(path))
+        self.children.append(PathTree(path, parent=self))
 
     def add_child_tree(self, path_tree: PathTree):
+        path_tree.parent = self
         self.children.append(path_tree)
 
     def set_children(self, paths: List[Path]):
@@ -33,7 +35,7 @@ class PathTree:
 
     def __iter__(self):
         def root_name(path: Path):
-            if path.parent == path:
+            if self.parent is None:
                 return str(path)
             return str(path.name)
 
@@ -44,3 +46,10 @@ class PathTree:
             yield 'size', self.size
             if self.checksum is not None:
                 yield 'checksum', self.checksum
+
+
+def get_root(path: PathTree) -> PathTree:
+    value = path
+    while value.parent is not None:
+        value = value.parent
+    return value

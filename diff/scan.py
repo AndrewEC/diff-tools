@@ -6,11 +6,11 @@ import click
 from diff.tree import build_path_tree, count_child_directories, count_child_files
 from diff.tree.io import to_yaml_string
 from diff.checksum import calculate_checksums_for_all_files_in_tree
-from diff.util.decorators import log_exception, valid_path, DIRECTORY
+from diff.util.decorators import log_exception, valid_path, PathType
 
 
 @log_exception
-@valid_path(DIRECTORY)
+@valid_path(PathType.Directory)
 def _scan(drive: Path, output: str, checksum: bool):
     print(f'Scanning for files and folders in drive: [{drive}]')
     tree = build_path_tree(drive)

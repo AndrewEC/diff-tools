@@ -1,8 +1,8 @@
 # diff-tools
-Command line tools for detecting changes in the directory structure of a drive.
+Command line tools for detecting changes in the directory structure of a given folder.
 
 ### scan
-Utility to scan the structure of all folders and files in a given drive and write them to a YAML file.
+Utility to scan the structure of all folders and files in a given folder and write them to a YAML file.
 
 Usage:
 > python -m diff scan "C:\\" "C_scan_result.yml"
@@ -17,9 +17,9 @@ Usage:
 > python -m diff changes "C_scan_result.yml"
 
 ### changed
-Utility to check the diff between two given drives. This will check the following:
-* If any file or folder can be found in one drive but can't be found in the other
-* If any file between the two drives has the same path but a different file size
+Utility to check the diff between two given folders. This will check the following:
+* If any file or folder can be found in one folder but can't be found in the other
+* If any file between the two folders has the same path but a different file size
 * Optionally calculate and compare the checksum of two files to ensure equality
 
 Usage:

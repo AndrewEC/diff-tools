@@ -1,9 +1,8 @@
 from pathlib import Path
 import os
-from typing import List, Tuple
+from typing import List
 
 from .model import PathTree
-from diff.util import extract_path_to_drive_letter
 
 
 _PATH_NAMES_TO_EXCLUDE = [
@@ -35,7 +34,7 @@ def build_path_tree(root_path: Path) -> PathTree:
     return root
 
 
-def rebuild_tree_from_drive_contents(source_tree: PathTree, override: Path = None) -> Tuple[Path, PathTree]:
-    drive_path = extract_path_to_drive_letter(source_tree) if override is None else override
+def rebuild_tree_from_drive_contents(source_tree: PathTree, override: Path = None) -> PathTree:
+    drive_path = source_tree.path if override is None else override
     current_tree = build_path_tree(drive_path)
-    return drive_path, current_tree
+    return current_tree

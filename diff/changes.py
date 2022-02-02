@@ -3,33 +3,32 @@ from pathlib import Path
 
 import click
 
-from diff.util import extract_path_to_drive_letter
-from diff.util.decorators import FILE, DIRECTORY, valid_path, log_exception
+from diff.util.decorators import PathType, valid_path, log_exception
 from diff.tree import PathTree, rebuild_tree_from_drive_contents
 from diff.tree.io import from_yaml_string
-from diff.tree.find import find_changed_files
+from diff.tree.find import find_changed_files_take_first
 from diff.checksum import calculate_checksums
 from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees
 
 
 def _find_files_removed_since_last_scan(source_tree: PathTree, override: Path) -> List[PathTree]:
-    drive_and_tree = rebuild_tree_from_drive_contents(source_tree, override)
-    return find_missing_paths_between_trees(source_tree, drive_and_tree[1])
+    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    return find_missing_paths_between_trees(source_tree, current_tree)
 
 
 def _find_files_added_since_last_scan(source_tree: PathTree, override: Path) -> List[PathTree]:
-    drive_and_tree = rebuild_tree_from_drive_contents(source_tree, override)
-    return find_missing_paths_between_trees(drive_and_tree[1], source_tree)
+    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    return find_missing_paths_between_trees(current_tree, source_tree)
 
 
 def _find_files_with_changes_since_last_scan(source_tree: PathTree, checksum: bool, override: Path) -> List[PathTree]:
-    drive_and_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
     if checksum:
-        similar_paths = find_similar_paths_between_trees(source_tree, drive_and_tree[1], True)
+        similar_paths = find_similar_paths_between_trees(source_tree, current_tree[1], True)
         print(f'Calculating checksums for [{len(similar_paths)}] files')
         paths_to_calculate = [paths[1] for paths in similar_paths]
         calculate_checksums(paths_to_calculate)
-    return find_changed_files(source_tree, drive_and_tree[1])
+    return find_changed_files_take_first(source_tree, current_tree)
 
 
 def _print_missing_files_and_folders(missing_paths: List[PathTree]):
@@ -45,7 +44,7 @@ def _print_missing_files_and_folders(missing_paths: List[PathTree]):
 
 def _print_new_files_and_folders(new_paths: List[PathTree]):
     if len(new_paths) == 0:
-        return print('No new files and directories were found on the drive.')
+        return print('No new files and directories were found.')
 
     for new_path in new_paths:
         if new_path.represents_directory():
@@ -63,15 +62,15 @@ def _print_paths_with_changed_files(changed_paths: List[PathTree]):
 
 
 @log_exception
-@valid_path(FILE, DIRECTORY)
+@valid_path(PathType.File, PathType.Directory)
 def _changes(scan_results: Path, checksum: bool, override: Path):
     with open(scan_results, 'r') as file:
         contents = '\n'.join(file.readlines())
     source_tree = from_yaml_string(contents)
 
-    drive_path = extract_path_to_drive_letter(source_tree)
-    if not drive_path.is_dir():
-        raise Exception(f'The scan results point to drive [{drive_path}] but the drive could not be found.')
+    target = source_tree.path if override is None else override
+    if not target.is_dir():
+        raise Exception(f'The scan results point to folder [{target}] but the folder could not be found.')
 
     missing_paths = _find_files_removed_since_last_scan(source_tree, override)
     new_paths = _find_files_added_since_last_scan(source_tree, override)

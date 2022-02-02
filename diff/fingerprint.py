@@ -3,11 +3,11 @@ from pathlib import Path
 import click
 
 from diff.checksum import calculate_checksum
-from diff.util.decorators import valid_path, FILE, log_exception
+from diff.util.decorators import valid_path, PathType, log_exception
 
 
 @log_exception
-@valid_path(FILE)
+@valid_path(PathType.File)
 def _fingerprint(file_path: Path):
     checksum_string = calculate_checksum(file_path)
 
