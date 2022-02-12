@@ -15,9 +15,10 @@ class PathTree:
     def add_child(self, path: Path):
         self.children.append(PathTree(path, parent=self))
 
-    def add_child_tree(self, path_tree: PathTree):
-        path_tree.parent = self
+    def create_and_append_child_tree(self, path: Path, size=-1, checksum=None) -> PathTree:
+        path_tree = PathTree(path, size, checksum, self)
         self.children.append(path_tree)
+        return path_tree
 
     def set_children(self, paths: List[Path]):
         self.children = []
@@ -33,6 +34,12 @@ class PathTree:
     def represents_directory(self) -> bool:
         return len(self.children) > 0
 
+    def get_root_tree(self):
+        value = self
+        while value.parent is not None:
+            value = value.parent
+        return value
+
     def __iter__(self):
         def root_name(path: Path):
             if self.parent is None:
@@ -46,10 +53,3 @@ class PathTree:
             yield 'size', self.size
             if self.checksum is not None:
                 yield 'checksum', self.checksum
-
-
-def get_root(path: PathTree) -> PathTree:
-    value = path
-    while value.parent is not None:
-        value = value.parent
-    return value

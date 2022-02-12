@@ -1,13 +1,16 @@
 from typing import List, Generator, Tuple, Optional
 
 from .. import PathTree
-from diff.util import path_without_root
 
 
-def _find_child_of_tree_with_similar_path(source_tree: PathTree, target_path: PathTree) -> Optional[PathTree]:
-    target_path_str = path_without_root(target_path)
-    for child in source_tree.children:
-        child_path_str = path_without_root(child)
+def _path_without_root(path_tree: PathTree) -> str:
+    return str(path_tree.path).replace(str(path_tree.get_root_tree().path), '')
+
+
+def _find_child_of_tree_with_similar_path(path_tree: PathTree, tree_to_match: PathTree) -> Optional[PathTree]:
+    target_path_str = _path_without_root(tree_to_match)
+    for child in path_tree.children:
+        child_path_str = _path_without_root(child)
         if target_path_str == child_path_str:
             return child
 

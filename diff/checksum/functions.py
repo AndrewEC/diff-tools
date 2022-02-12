@@ -1,7 +1,9 @@
-from typing import List, Tuple
+from typing import List, Tuple, Callable
+import enum
 import math
 import hashlib
 from pathlib import Path
+
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -18,8 +20,20 @@ class TaskArguments:
         self.max_block_size = max_block_size
 
 
+class ChecksumFunctionType(enum.Enum):
+    Exact = 0
+    Pseudo = 1
+
+
+class ChecksumFunction:
+
+    def __init__(self, function_type: ChecksumFunctionType, function: Callable[[Path], str]):
+        self.function_type = function_type
+        self.apply = function
+
+
 def _calculate_max_block_size() -> int:
-    return hashlib.sha256().block_size * 128
+    return hashlib.shake_256().block_size * 128
 
 
 def _calculate_block_info(path: Path) -> List[Tuple[int, int]]:
@@ -37,9 +51,7 @@ def _calculate_block_info(path: Path) -> List[Tuple[int, int]]:
 
 
 def _next_block_size(remaining: int, max_block_size: int) -> int:
-    if remaining > max_block_size:
-        return max_block_size
-    return remaining
+    return min(remaining, max_block_size)
 
 
 def _calculate_checksum_for_chunk(task_arguments: TaskArguments) -> str:
@@ -79,9 +91,7 @@ def _file_size_in_megabytes(path: Path) -> float:
     return path.stat().st_size / 1024 / 1024
 
 
-def calculate_checksum(path: Path) -> str:
-    print(f'Calculating checksum of file: [{path}]')
+def get_checksum_function(path: Path) -> ChecksumFunction:
     if _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
-        print(f'File [{path}] is over 200 megabytes. Checksum will be calculated as a pseudo checksum.')
-        return _large_file_pseudo_checksum(path)
-    return _small_file_checksum(path)
+        return ChecksumFunction(ChecksumFunctionType.Pseudo, _large_file_pseudo_checksum)
+    return ChecksumFunction(ChecksumFunctionType.Exact, _small_file_checksum)

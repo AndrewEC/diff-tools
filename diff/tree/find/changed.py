@@ -15,8 +15,8 @@ def find_changed_files(first: PathTree, second: PathTree) -> List[Tuple[PathTree
             return True
         return first_match.checksum == second_match.checksum
 
-    def are_files_different(similar_files: Tuple[PathTree, PathTree]) -> bool:
-        return similar_files[0].size != similar_files[1].size or not are_checksums_same(similar_files)
+    def are_files_different(to_compare: Tuple[PathTree, PathTree]) -> bool:
+        return to_compare[0].size != to_compare[1].size or not are_checksums_same(to_compare)
 
     return list(filter(are_files_different, similar_paths))
 

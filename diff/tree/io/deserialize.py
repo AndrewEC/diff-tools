@@ -27,8 +27,7 @@ def _append_child_elements_from_dictionary(yaml_element: Dict[Hashable, Any],
                                            path_tree: PathTree):
 
     for key in yaml_element.keys():
-        child_tree = PathTree(path_tree.path.joinpath(key))
-        path_tree.add_child_tree(child_tree)
+        child_tree = path_tree.create_and_append_child_tree(path_tree.path.joinpath(key))
         _append_child_paths_from_element(yaml_element[key], child_tree)
 
 
@@ -36,7 +35,7 @@ def _parse_path_tree_from_element(yaml_element: Dict[Hashable, str], path_tree: 
     size = int(yaml_element['size'])
     checksum = yaml_element['checksum'] if 'checksum' in yaml_element else None
     path = path_tree.path.joinpath(yaml_element['name'])
-    return PathTree(path, size, checksum)
+    return path_tree.create_and_append_child_tree(path, size, checksum)
 
 
 def _append_child_elements_from_list(yaml_element: List,
@@ -45,8 +44,7 @@ def _append_child_elements_from_list(yaml_element: List,
     for element in yaml_element:
         if type(element) is dict:
             if 'name' in element:
-                child_tree = _parse_path_tree_from_element(element, path_tree)
-                path_tree.add_child_tree(child_tree)
+                _parse_path_tree_from_element(element, path_tree)
             else:
                 _append_child_paths_from_element(element, path_tree)
         elif type(element) is list:

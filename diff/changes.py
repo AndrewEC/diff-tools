@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 
 from diff.util.decorators import PathType, valid_path, log_exception
-from diff.tree import PathTree, rebuild_tree_from_drive_contents
+from diff.tree import PathTree, rebuild_tree_from_folder_contents
 from diff.tree.io import from_yaml_string
 from diff.tree.find import find_changed_files_take_first
 from diff.checksum import calculate_checksums
@@ -12,17 +12,17 @@ from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_
 
 
 def _find_files_removed_since_last_scan(source_tree: PathTree, override: Path) -> List[PathTree]:
-    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    current_tree = rebuild_tree_from_folder_contents(source_tree, override)
     return find_missing_paths_between_trees(source_tree, current_tree)
 
 
 def _find_files_added_since_last_scan(source_tree: PathTree, override: Path) -> List[PathTree]:
-    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    current_tree = rebuild_tree_from_folder_contents(source_tree, override)
     return find_missing_paths_between_trees(current_tree, source_tree)
 
 
 def _find_files_with_changes_since_last_scan(source_tree: PathTree, checksum: bool, override: Path) -> List[PathTree]:
-    current_tree = rebuild_tree_from_drive_contents(source_tree, override)
+    current_tree = rebuild_tree_from_folder_contents(source_tree, override)
     if checksum:
         similar_paths = find_similar_paths_between_trees(source_tree, current_tree[1], True)
         print(f'Calculating checksums for [{len(similar_paths)}] files')
@@ -70,7 +70,7 @@ def _changes(scan_results: Path, checksum: bool, override: Path):
 
     target = source_tree.path if override is None else override
     if not target.is_dir():
-        raise Exception(f'The scan results point to folder [{target}] but the folder could not be found.')
+        raise Exception(f'Attempted to detect changes in [{target}] folder, but the folder could not be found.')
 
     missing_paths = _find_files_removed_since_last_scan(source_tree, override)
     new_paths = _find_files_added_since_last_scan(source_tree, override)

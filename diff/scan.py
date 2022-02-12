@@ -11,9 +11,9 @@ from diff.util.decorators import log_exception, valid_path, PathType
 
 @log_exception
 @valid_path(PathType.Directory)
-def _scan(drive: Path, output: str, checksum: bool):
-    print(f'Scanning for files and folders in drive: [{drive}]')
-    tree = build_path_tree(drive)
+def _scan(folder: Path, output: str, checksum: bool):
+    print(f'Scanning for files and folders in folder: [{folder}]')
+    tree = build_path_tree(folder)
 
     if checksum:
         calculate_checksums_for_all_files_in_tree(tree)
@@ -30,8 +30,8 @@ def _scan(drive: Path, output: str, checksum: bool):
 
 
 @click.command('scan')
-@click.argument('drive')
+@click.argument('folder')
 @click.argument('output')
 @click.option('--checksum', '-c', is_flag=True)
-def scan(drive: str, output: str, checksum: bool):
-    _scan(drive, output, checksum)
+def scan(folder: str, output: str, checksum: bool):
+    _scan(folder, output, checksum)

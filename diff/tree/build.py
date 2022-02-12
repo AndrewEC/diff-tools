@@ -34,7 +34,7 @@ def build_path_tree(root_path: Path) -> PathTree:
     return root
 
 
-def rebuild_tree_from_drive_contents(source_tree: PathTree, override: Path = None) -> PathTree:
+def rebuild_tree_from_folder_contents(source_tree: PathTree, override: Path = None) -> PathTree:
     drive_path = source_tree.path if override is None else override
     current_tree = build_path_tree(drive_path)
     return current_tree
