@@ -1,5 +1,5 @@
 from typing import List
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 from diff.tree import PathTree
 from diff.util import get_all_files_under_path
@@ -20,8 +20,7 @@ def calculate_checksums(trees: List[PathTree]):
         file.checksum = checksum_function.apply(file.path)
 
     with ThreadPoolExecutor(max_workers=task_count) as executor:
-        future_results = list(map(lambda argument: executor.submit(task, argument), trees))
-        [future.result() for future in as_completed(future_results)]
+        executor.map(task, trees)
 
 
 def calculate_checksums_for_all_files_in_tree(path_tree: PathTree):

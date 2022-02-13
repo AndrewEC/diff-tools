@@ -24,7 +24,7 @@ def _find_files_added_since_last_scan(source_tree: PathTree, override: Path) -> 
 def _find_files_with_changes_since_last_scan(source_tree: PathTree, checksum: bool, override: Path) -> List[PathTree]:
     current_tree = rebuild_tree_from_folder_contents(source_tree, override)
     if checksum:
-        similar_paths = find_similar_paths_between_trees(source_tree, current_tree[1], True)
+        similar_paths = find_similar_paths_between_trees(source_tree, current_tree, True)
         print(f'Calculating checksums for [{len(similar_paths)}] files')
         paths_to_calculate = [paths[1] for paths in similar_paths]
         calculate_checksums(paths_to_calculate)

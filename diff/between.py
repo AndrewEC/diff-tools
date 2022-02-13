@@ -1,6 +1,8 @@
 from typing import List, Tuple
 from pathlib import Path
 
+from concurrent.futures import ThreadPoolExecutor
+
 import click
 
 from diff.tree import PathTree, build_path_tree
@@ -44,8 +46,10 @@ def _calculate_checksums_of_similar_files(first_tree: PathTree, second_tree: Pat
 @log_exception
 @valid_path(PathType.Directory, PathType.Directory)
 def _between(first_folder_path: Path, second_folder_path: Path, checksum: bool):
-    first_tree = build_path_tree(first_folder_path)
-    second_tree = build_path_tree(second_folder_path)
+    with ThreadPoolExecutor(2) as executor:
+        trees = list(executor.map(build_path_tree, [first_folder_path, second_folder_path]))
+    first_tree = trees[0]
+    second_tree = trees[1]
 
     if checksum:
         _calculate_checksums_of_similar_files(first_tree, second_tree)
