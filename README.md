@@ -1,7 +1,7 @@
 # diff-tools
 Command line tools for detecting changes in the directory structure of a given folder.
 
-**Important**: It is recommended to run the `CreateEnv.ps1` script before executing any of the below commands.
+**Important**: It is recommended to run the `CreateVenv.ps1` script before executing any of the below commands.
 
 ### scan
 Utility to scan the structure of all folders and files in a given folder and write them to a YAML file.
