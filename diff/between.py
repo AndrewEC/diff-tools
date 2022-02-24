@@ -24,7 +24,7 @@ def _print_missing_files_and_folders(missing_paths: List[PathTree], first_folder
 
 def _print_changed_files(differences: List[Tuple[PathTree, PathTree]]):
     if len(differences) == 0:
-        print('No files find were found.')
+        print('All common files between folders appear to be the same.')
 
     for difference in differences:
         print(f'Two similarly named files that contain different contents were found:')
