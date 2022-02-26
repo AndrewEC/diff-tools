@@ -12,7 +12,7 @@ _LARGE_FILE_SIZE_THRESHOLD = 200
 _LARGE_FILE_CHUNK_SIZE = 250 * 1024 * 1024
 
 
-class TaskArguments:
+class _TaskArguments:
 
     def __init__(self, path: Path, chunk_info: Tuple[int, int], max_block_size: int):
         self.path = path
@@ -54,7 +54,7 @@ def _next_block_size(remaining: int, max_block_size: int) -> int:
     return min(remaining, max_block_size)
 
 
-def _calculate_checksum_for_chunk(task_arguments: TaskArguments) -> str:
+def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
     remaining = task_arguments.size
     hasher = hashlib.shake_256()
     with open(task_arguments.path, 'rb') as file:
@@ -70,7 +70,7 @@ def _calculate_checksum_for_chunk(task_arguments: TaskArguments) -> str:
 def _large_file_pseudo_checksum(path: Path) -> str:
     block_info = _calculate_block_info(path)
     max_block_size = _calculate_max_block_size()
-    task_arguments = [TaskArguments(path, block_info, max_block_size) for block_info in block_info]
+    task_arguments = [_TaskArguments(path, block_info, max_block_size) for block_info in block_info]
     with ThreadPoolExecutor(_TASK_COUNT) as executor:
         combined_hash = ''.join(list(executor.map(_calculate_checksum_for_chunk, task_arguments)))
     return hashlib.shake_256(bytes(combined_hash, 'utf-8')).hexdigest(30)
