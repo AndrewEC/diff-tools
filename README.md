@@ -34,4 +34,4 @@ Utility to generate a checksum, or hash, or a specified file.
 * If the file is above 200 MB in size the hash will be a pseudo Shake 256 hash
 
 Usage:
-> python -m fingerprint "C:\\<path_to_file_to_fingerprint>"
+> python -m diff checksum "C:\\<path_to_file_to_fingerprint>"
