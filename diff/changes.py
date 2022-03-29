@@ -89,5 +89,5 @@ def _changes(scan_results: Path, checksum: bool, override: Path):
 @click.argument('scan')
 @click.option('--checksum', '-c', is_flag=True)
 @click.option('--override', '-o')
-def changes(scan: str, checksum: bool, override: str):
+def changes_command(scan: str, checksum: bool, override: str):
     _changes(scan, checksum, override)

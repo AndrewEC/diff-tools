@@ -92,6 +92,6 @@ def _file_size_in_megabytes(path: Path) -> float:
 
 
 def get_checksum_function(path: Path, force_exact: bool = False) -> ChecksumFunction:
-    if force_exact and _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
+    if not force_exact and _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
         return ChecksumFunction(ChecksumFunctionType.Pseudo, _large_file_pseudo_checksum)
     return ChecksumFunction(ChecksumFunctionType.Exact, _small_file_checksum)

@@ -23,5 +23,5 @@ def _fingerprint(file_path: Path, exact_hash: bool):
 @click.command('checksum')
 @click.argument('file')
 @click.option('--exact-hash', '-e', is_flag=True)
-def fingerprint(file: str, exact_hash: bool):
+def fingerprint_command(file: str, exact_hash: bool):
     _fingerprint(file, exact_hash)

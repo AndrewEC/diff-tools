@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 
 from diff.tree import build_path_tree, count_child_directories, count_child_files
-from diff.tree.io import to_yaml_string
+from diff.tree.io import to_yaml_file
 from diff.checksum import calculate_checksums_for_all_files_in_tree
 from diff.util.decorators import log_exception, valid_path, PathType
 
@@ -18,9 +18,7 @@ def _scan(folder: Path, output: str, checksum: bool):
     if checksum:
         calculate_checksums_for_all_files_in_tree(tree)
 
-    print(f'Saving scan results to: [{output}]')
-    with open(output, 'w', encoding='utf-8') as file:
-        file.write(to_yaml_string(tree))
+    to_yaml_file(output, tree)
 
     dir_count = count_child_directories(tree)
     file_count = count_child_files(tree)
@@ -33,5 +31,5 @@ def _scan(folder: Path, output: str, checksum: bool):
 @click.argument('folder')
 @click.argument('output')
 @click.option('--checksum', '-c', is_flag=True)
-def scan(folder: str, output: str, checksum: bool):
+def scan_command(folder: str, output: str, checksum: bool):
     _scan(folder, output, checksum)

@@ -6,6 +6,12 @@ import yaml
 from ..model import PathTree
 
 
+def from_yaml_file(yaml_file: Path) -> PathTree:
+    with open(yaml_file, 'r') as file:
+        contents = '\n'.join(file.readlines())
+        return from_yaml_string(contents)
+
+
 def from_yaml_string(yaml_string: str) -> PathTree:
     parsed = yaml.safe_load(yaml_string)
     first_available_key = next((_ for _ in parsed.keys()))
