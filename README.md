@@ -25,7 +25,10 @@ Utility to check the diff between two given folders. This will check the followi
 * Optionally calculate and compare the checksum of two files to ensure equality
 
 Usage:
-> python -m diff between "C:\\" "D:\\"
+> python -m diff between folders "C:\\" "D:\\"
+
+or to compare the differences between two previous scan results built using the `scan` command:
+> python -m diff between scans "C:\\scan.yml" "D:\\scan.yml"
 
 
 ### fingerprint
