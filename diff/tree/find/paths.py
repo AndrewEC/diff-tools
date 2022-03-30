@@ -4,7 +4,7 @@ from .. import PathTree
 
 
 def _path_without_root(path_tree: PathTree) -> str:
-    return str(path_tree.path).replace(str(path_tree.get_root_tree().path), '')
+    return str(path_tree.path).replace(str(path_tree.get_root().path), '')
 
 
 def _find_child_of_tree_with_similar_path(path_tree: PathTree, tree_to_match: PathTree) -> Optional[PathTree]:

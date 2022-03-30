@@ -62,8 +62,8 @@ def _find_and_print_changes(first_tree: PathTree, second_tree: PathTree):
 @valid_path(PathType.Directory, PathType.Directory)
 def _do_between_folders(first_folder_path: Path, second_folder_path: Path, checksum: bool):
     if first_folder_path == second_folder_path:
-        return print('Both paths point to the same directory. This utility should be used to find the differences '
-                     'between two different directories.')
+        raise Exception('Both paths point to the same directory. This utility should be used to find the differences '
+                        'between two different directories.')
     with ThreadPoolExecutor(2) as executor:
         trees = list(executor.map(build_path_tree, [first_folder_path, second_folder_path]))
     first_tree = trees[0]
@@ -78,6 +78,9 @@ def _do_between_folders(first_folder_path: Path, second_folder_path: Path, check
 @log_exception
 @valid_path(PathType.File, PathType.File)
 def _do_between_scans(first_scan_path: Path, second_scan_path: Path):
+    if first_scan_path == second_scan_path:
+        raise Exception('Both paths point to the same file. This utility should be used to verify the differences '
+                        'between two different scan results.')
     first_tree = from_yaml_file(first_scan_path)
     second_tree = from_yaml_file(second_scan_path)
     _find_and_print_changes(first_tree, second_tree)
