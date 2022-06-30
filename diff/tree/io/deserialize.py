@@ -33,7 +33,7 @@ def _append_child_elements_from_dictionary(yaml_element: Dict[Hashable, Any],
                                            path_tree: PathTree):
 
     for key in yaml_element.keys():
-        child_tree = path_tree.create_and_append_child_tree(path_tree.path.joinpath(key))
+        child_tree = path_tree.create_and_append_child_tree(path_tree.path.joinpath(str(key)))
         _append_child_paths_from_element(yaml_element[key], child_tree)
 
 
