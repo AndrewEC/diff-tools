@@ -5,7 +5,7 @@ import click
 
 from diff.util.decorators import PathType, valid_path, log_exception
 from diff.tree import PathTree, rebuild_tree_from_folder_contents
-from diff.tree.io import from_yaml_string
+from diff.tree.io import from_yaml_file
 from diff.tree.find import find_changed_files_take_first
 from diff.checksum import calculate_checksums
 from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees
@@ -61,12 +61,10 @@ def _print_paths_with_changed_files(changed_paths: List[PathTree]):
         print(f'The file [{path.path}] has changed since last scan.')
 
 
-@log_exception
+@log_exception('Could not detect changes between the input directories.')
 @valid_path(PathType.File, PathType.Directory)
 def _changes(scan_results: Path, checksum: bool, override: Path):
-    with open(scan_results, 'r') as file:
-        contents = '\n'.join(file.readlines())
-    source_tree = from_yaml_string(contents)
+    source_tree = from_yaml_file(scan_results)
 
     target = source_tree.path if override is None else override
     if not target.is_dir():

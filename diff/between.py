@@ -9,7 +9,7 @@ from diff.tree import PathTree, build_path_tree
 from diff.tree.io import from_yaml_file
 from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees, find_changed_files
 from diff.util.decorators import valid_path, PathType, log_exception
-from diff.checksum import calculate_checksums_of_two_trees
+from diff.checksum import calculate_checksums_of_two_trees, get_checksum_function, ChecksumFunctionType
 
 
 def _print_missing_files_and_folders(missing_paths: List[PathTree], first_folder: Path, second_folder: Path):
@@ -25,7 +25,7 @@ def _print_missing_files_and_folders(missing_paths: List[PathTree], first_folder
 
 def _print_changed_files(differences: List[Tuple[PathTree, PathTree]]):
     if len(differences) == 0:
-        print('All common files between folders appear to be the same.')
+        return print('All common files between folders appear to be the same.')
 
     for difference in differences:
         print(f'Two similarly named files that contain different contents were found:')
@@ -58,7 +58,19 @@ def _find_and_print_changes(first_tree: PathTree, second_tree: PathTree):
     print('\n===== ===== ===== ===== =====\n')
 
 
-@log_exception
+def _calculate_checksums_of_files(first: Path, second: Path, exact_hash: bool) -> List[str]:
+    def do_calculate_checksum(file_path: Path) -> str:
+        print(f'Calculating checksum of file: [{file_path}]')
+        checksum_function = get_checksum_function(file_path, exact_hash)
+        if checksum_function.function_type == ChecksumFunctionType.Pseudo:
+            print(f'File [{file_path}] is over 200 megabytes. Checksum will be calculated as a pseudo checksum.')
+        return checksum_function.apply(file_path)
+
+    with ThreadPoolExecutor(2) as executor:
+        return list(executor.map(do_calculate_checksum, [first, second]))
+
+
+@log_exception('Could not finish scanning both input folders.')
 @valid_path(PathType.Directory, PathType.Directory)
 def _do_between_folders(first_folder_path: Path, second_folder_path: Path, checksum: bool):
     if first_folder_path == second_folder_path:
@@ -75,7 +87,7 @@ def _do_between_folders(first_folder_path: Path, second_folder_path: Path, check
     _find_and_print_changes(first_tree, second_tree)
 
 
-@log_exception
+@log_exception('Could not detect all changes between scans.')
 @valid_path(PathType.File, PathType.File)
 def _do_between_scans(first_scan_path: Path, second_scan_path: Path):
     if first_scan_path == second_scan_path:
@@ -84,6 +96,21 @@ def _do_between_scans(first_scan_path: Path, second_scan_path: Path):
     first_tree = from_yaml_file(first_scan_path)
     second_tree = from_yaml_file(second_scan_path)
     _find_and_print_changes(first_tree, second_tree)
+
+
+@log_exception('Could not compute fingerprints for both files.')
+@valid_path(PathType.File, PathType.File)
+def _do_between_files(first_file: Path, second_file: Path, exact_hash: bool):
+    if first_file == second_file:
+        return print('Both paths point to the same file. This utility should be used to check the differences'
+                     ' between two files. Use the checksum utility to calculate the checksum of a single file.')
+    first_file_checksum, second_file_checksum = _calculate_checksums_of_files(first_file, second_file, exact_hash)
+    if first_file_checksum != second_file_checksum:
+        print('The checksums of the files do not match.')
+    else:
+        print('Both files have the same checksums.')
+    print(f'[{first_file}] :: [{first_file_checksum}]')
+    print(f'[{second_file}] :: [{second_file_checksum}]')
 
 
 @click.command('folders')
@@ -101,6 +128,14 @@ def _between_scans(first_scan: str, second_scan: str):
     _do_between_scans(first_scan, second_scan)
 
 
+@click.command('files')
+@click.argument('first_file')
+@click.argument('second_file')
+@click.option('--exact-hash', '-e', is_flag=True)
+def _between_files(first_file: str, second_file: str, exact_hash: bool):
+    _do_between_files(first_file, second_file, exact_hash)
+
+
 @click.group('between')
 def between_group():
     pass
@@ -108,3 +143,4 @@ def between_group():
 
 between_group.add_command(_between_folders)
 between_group.add_command(_between_scans)
+between_group.add_command(_between_files)

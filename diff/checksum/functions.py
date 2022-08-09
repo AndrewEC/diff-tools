@@ -67,7 +67,7 @@ def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
     return hasher.hexdigest(30)
 
 
-def _large_file_pseudo_checksum(path: Path) -> str:
+def _pseudo_checksum(path: Path) -> str:
     block_info = _calculate_block_info(path)
     max_block_size = _calculate_max_block_size()
     task_arguments = [_TaskArguments(path, block_info, max_block_size) for block_info in block_info]
@@ -76,7 +76,7 @@ def _large_file_pseudo_checksum(path: Path) -> str:
     return hashlib.shake_256(bytes(combined_hash, 'utf-8')).hexdigest(30)
 
 
-def _small_file_checksum(path: Path) -> str:
+def _exact_checksum(path: Path) -> str:
     hasher = hashlib.shake_256()
     block_size = 128 * hasher.block_size
     with open(path, 'rb') as file:
@@ -93,5 +93,5 @@ def _file_size_in_megabytes(path: Path) -> float:
 
 def get_checksum_function(path: Path, force_exact: bool = False) -> ChecksumFunction:
     if not force_exact and _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
-        return ChecksumFunction(ChecksumFunctionType.Pseudo, _large_file_pseudo_checksum)
-    return ChecksumFunction(ChecksumFunctionType.Exact, _small_file_checksum)
+        return ChecksumFunction(ChecksumFunctionType.Pseudo, _pseudo_checksum)
+    return ChecksumFunction(ChecksumFunctionType.Exact, _exact_checksum)

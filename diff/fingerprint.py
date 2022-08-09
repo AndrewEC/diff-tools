@@ -6,7 +6,7 @@ from diff.checksum import get_checksum_function, ChecksumFunctionType
 from diff.util.decorators import valid_path, PathType, log_exception
 
 
-@log_exception
+@log_exception('Could not fingerprint the input file.')
 @valid_path(PathType.File)
 def _fingerprint(file_path: Path, exact_hash: bool):
     print(f'Calculating checksum of file: [{file_path}]')
