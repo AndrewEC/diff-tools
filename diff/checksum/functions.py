@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 _TASK_COUNT = 3
 _LARGE_FILE_SIZE_THRESHOLD = 200
-_LARGE_FILE_CHUNK_SIZE = 250 * 1024 * 1024
+_LARGE_FILE_CHUNK_SIZE = 200 * 1024 * 1024
 
 
 class _TaskArguments:
@@ -92,6 +92,21 @@ def _file_size_in_megabytes(path: Path) -> float:
 
 
 def get_checksum_function(path: Path, force_exact: bool = False) -> ChecksumFunction:
+    """
+    Gets the appropriate function for computing the checksum of a given file.
+
+    If the file size is below the threshold of 200 megabytes then an exact Shake 256 hash will be used.
+
+    If the file size is above the threshold then this will return a pseudo hash function that will split the file up
+    into 200 megabyte chunks, calculate the size of each chunk, the combine the resulting hashes into a single hash.
+    The pseudo function is multithreaded and will use a thread pool executor with a maximum of 3 threads.
+
+    :param path: The path to the file to calculate the checksum of.
+    :param force_exact: If true this will force the use of the exact hashing function even if the file size is above
+    the 200 megabyte threshold.
+    :return: A function that can be applied to calculate the hash of a given set of files. The function instance
+    can be re-used.
+    """
     if not force_exact and _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
         return ChecksumFunction(ChecksumFunctionType.Pseudo, _pseudo_checksum)
     return ChecksumFunction(ChecksumFunctionType.Exact, _exact_checksum)

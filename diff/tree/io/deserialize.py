@@ -7,12 +7,24 @@ from ..model import PathTree
 
 
 def from_yaml_file(yaml_file: Path) -> PathTree:
+    """
+    Deserializes a yaml file to a new PathTree instance.
+
+    :param yaml_file: The path of the file ot be deserialized.
+    :return: A new PathTree instance.
+    """
     with open(yaml_file, 'r') as file:
         contents = '\n'.join(file.readlines())
         return from_yaml_string(contents)
 
 
 def from_yaml_string(yaml_string: str) -> PathTree:
+    """
+    Deserializes a yaml string to a PathTree instance.
+
+    :param yaml_string: The valid yaml formatted string to deserialize.
+    :return: A new PathTree instance initialized from the yaml string.
+    """
     parsed = yaml.safe_load(yaml_string)
     first_available_key = next((_ for _ in parsed.keys()))
     root = PathTree(Path(first_available_key))

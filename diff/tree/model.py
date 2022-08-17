@@ -26,10 +26,10 @@ class PathTree:
             self.add_child(path)
 
     def get_child_directories(self) -> List[PathTree]:
-        return [child for child in self.children if child.path.is_dir()]
+        return [child for child in self.children if child.represents_directory()]
 
     def get_child_files(self) -> List[PathTree]:
-        return [child for child in self.children if child.path.is_file()]
+        return [child for child in self.children if not child.represents_directory()]
 
     def represents_directory(self) -> bool:
         return len(self.children) > 0

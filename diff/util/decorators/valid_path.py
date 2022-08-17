@@ -15,6 +15,13 @@ def _validate_path(path: Path, validation_type: PathType):
 
 
 def valid_path(*validation_type: PathType):
+    """
+    Provides a layer of parsing and validation on the decorated function to allow for automated conversion of a string
+    parameter into a valid Path object of the specified type.
+
+    :param validation_type: A variable parameter list specifying if the path should be treated as a file
+    or a directory.
+    """
     def inner(function):
         def wrapper(*arguments):
             current_validation = 0
