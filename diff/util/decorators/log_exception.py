@@ -10,7 +10,7 @@ def log_exception(message: str):
             try:
                 return function(*args, **kwargs)
             except Exception as e:
-                print(f'{message}. [{e}]')
+                print(f'{message} [{e}]')
                 return None
         return wrapper
     return inner
