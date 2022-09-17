@@ -46,7 +46,7 @@ def calculate_checksums_for_all_files_in_tree(path_tree: PathTree):
     files_under_path = get_all_files_under_path(path_tree)
     file_count = len(files_under_path)
     print(f'Calculating checksum for [{file_count}] files')
-    if file_count:
+    if file_count == 0:
         return
     calculate_checksums(files_under_path)
 

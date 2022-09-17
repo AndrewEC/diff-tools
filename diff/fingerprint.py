@@ -16,7 +16,7 @@ def _fingerprint(file_path: Path, exact_hash: bool):
     checksum_string = checksum_function.apply(file_path)
 
     print('\n===== ===== ===== ===== =====\n')
-    print(f'Checksum of file is:\n\t{checksum_string}')
+    print(f'Shake256 checksum of file is:\n\t{checksum_string}')
     print('\n===== ===== ===== ===== =====\n')
 
 

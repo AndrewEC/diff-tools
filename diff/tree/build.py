@@ -46,7 +46,7 @@ def build_path_tree(root_path: Path) -> PathTree:
 def rebuild_tree_from_folder_contents(source_tree: PathTree, override: Path = None) -> PathTree:
     """
     Extracts the root path from the input PathTree and scans the current file system to create a new PathTree instance
-    with the same root as the source tree but with the updated file information.
+    with the same root as the source tree but with the updated file information pulled from disk.
 
     :param source_tree: The input source tree from which the root scan path will be parsed from.
     :param override: If provided this path will be used in place of the root path of the source tree when
