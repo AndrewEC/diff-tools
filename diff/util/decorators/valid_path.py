@@ -19,7 +19,7 @@ class _ArgumentValidator:
 
     def __init__(self, validation_type: Tuple[PathType]):
         self._validation_type = validation_type
-        self._last_validated_index = 0
+        self._next_validation_index = 0
 
     def augment_argument(self, argument: Any) -> Any:
         if not self._can_validate_argument(argument):
@@ -29,15 +29,15 @@ class _ArgumentValidator:
         return path
 
     def _can_validate_argument(self, argument: Any) -> bool:
-        return self._last_validated_index < len(self._validation_type) and type(argument) is str
+        return self._next_validation_index < len(self._validation_type) and type(argument) is str
 
     def _validate_path(self, path: Path):
-        validation_type = self._validation_type[self._last_validated_index]
+        validation_type = self._validation_type[self._next_validation_index]
         if validation_type == PathType.Directory and not path.is_dir():
             raise Exception(f'The path [{path}] either does not exist or does not point to a directory.')
         elif validation_type == PathType.File and not path.is_file():
             raise Exception(f'The path [{path}] either does not exist or does not point to a file.')
-        self._last_validated_index = self._last_validated_index + 1
+        self._next_validation_index = self._next_validation_index + 1
 
 
 def valid_path(*validation_types: PathType):
