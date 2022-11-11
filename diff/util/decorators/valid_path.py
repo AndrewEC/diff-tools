@@ -4,14 +4,7 @@ import enum
 
 
 class PathType(enum.Enum):
-    """
-    Specifies the string parameter should be parsed into a Path object and validated as a directory.
-    """
     Directory = 0
-
-    """
-    Specifies the string parameter should be parsed into a Path object and validated as a file.
-    """
     File = 1
 
 

@@ -12,7 +12,7 @@ def _find_child_of_tree_with_similar_path(path_tree: PathTree, tree_to_match: Pa
     return next((child for child in path_tree.children if _path_without_root(child) == target_path_str), None)
 
 
-def _are_paths_of_same_size(first: PathTree, second: PathTree) -> bool:
+def _are_files_of_same_size(first: PathTree, second: PathTree) -> bool:
     return first.path.stat().st_size == second.path.stat().st_size
 
 
@@ -40,7 +40,7 @@ def find_similar_paths_between_trees(first_source_tree: PathTree, second_source_
     def yield_similar(first_tree: PathTree, second_tree: PathTree) -> Generator[Tuple[PathTree, PathTree], None, None]:
         for first_tree_child in first_tree.children:
             second_tree_child = _find_child_of_tree_with_similar_path(second_tree, first_tree_child)
-            if not second_tree_child or (match_file_sizes and not _are_paths_of_same_size(first_tree_child, second_tree_child)):
+            if not second_tree_child or (match_file_sizes and not _are_files_of_same_size(first_tree_child, second_tree_child)):
                 continue
             if first_tree_child.represents_directory():
                 yield from yield_similar(first_tree_child, second_tree_child)

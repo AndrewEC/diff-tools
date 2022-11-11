@@ -34,7 +34,7 @@ class PathTree:
     def represents_directory(self) -> bool:
         return len(self.children) > 0
 
-    def get_root(self):
+    def get_root(self) -> PathTree:
         value = self
         while value.parent is not None:
             value = value.parent

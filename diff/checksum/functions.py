@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Any
 import enum
 import math
 import hashlib
@@ -32,8 +32,12 @@ class ChecksumFunction:
         self.apply = function
 
 
+def _get_hashing_function() -> Any:
+    return hashlib.sha256()
+
+
 def _calculate_max_block_size() -> int:
-    return hashlib.shake_256().block_size * 128
+    return _get_hashing_function().block_size * 128
 
 
 def _calculate_block_info(path: Path) -> List[Tuple[int, int]]:
@@ -56,7 +60,7 @@ def _next_block_size(remaining: int, max_block_size: int) -> int:
 
 def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
     remaining = task_arguments.size
-    hasher = hashlib.shake_256()
+    hasher = _get_hashing_function()
     with open(task_arguments.path, 'rb') as file:
         file.seek(task_arguments.start, 0)
         read = file.read(_next_block_size(remaining, task_arguments.max_block_size))
@@ -64,7 +68,7 @@ def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
             hasher.update(read)
             remaining = remaining - len(read)
             read = file.read(_next_block_size(remaining, task_arguments.max_block_size))
-    return hasher.hexdigest(30)
+    return hasher.hexdigest()
 
 
 def _pseudo_checksum(path: Path) -> str:
@@ -73,18 +77,18 @@ def _pseudo_checksum(path: Path) -> str:
     task_arguments = [_TaskArguments(path, block_info, max_block_size) for block_info in block_info]
     with ThreadPoolExecutor(_TASK_COUNT) as executor:
         combined_hash = ''.join(list(executor.map(_calculate_checksum_for_chunk, task_arguments)))
-    return hashlib.shake_256(bytes(combined_hash, 'utf-8')).hexdigest(30)
+    return _get_hashing_function().update(bytes(combined_hash, 'utf-8')).hexdigest()
 
 
 def _exact_checksum(path: Path) -> str:
-    hasher = hashlib.shake_256()
+    hasher = _get_hashing_function()
     block_size = 128 * hasher.block_size
     with open(path, 'rb') as file:
         read = file.read(block_size)
         while len(read) > 0:
             hasher.update(read)
             read = file.read(block_size)
-    return hasher.hexdigest(30)
+    return hasher.hexdigest()
 
 
 def _file_size_in_megabytes(path: Path) -> float:
@@ -95,7 +99,7 @@ def get_checksum_function(path: Path, force_exact: bool = False) -> ChecksumFunc
     """
     Gets the appropriate function for computing the checksum of a given file.
 
-    If the file size is below the threshold of 200 megabytes then an exact Shake 256 hash will be used.
+    If the file size is below the threshold of 200 megabytes then an exact Sha 256 hash will be used.
 
     If the file size is above the threshold then this will return a pseudo hash function that will split the file up
     into 200 megabyte chunks, calculate the size of each chunk, the combine the resulting hashes into a single hash.
