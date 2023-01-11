@@ -10,7 +10,7 @@ def _is_valid_path(path: Path) -> bool:
 
 
 def _get_directory_contents(path: Path) -> List[Path]:
-    return list(filter(_is_valid_path, map(path.joinpath, os.listdir(path))))
+    return list(filter(_is_valid_path, path.iterdir()))
 
 
 def build_path_tree(root_path: Path) -> PathTree:
