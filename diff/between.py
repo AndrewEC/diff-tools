@@ -118,6 +118,12 @@ def _do_between_files(first_file: Path, second_file: Path, exact_hash: bool):
 @click.argument('second_folder')
 @click.option('--checksum', '-c', is_flag=True)
 def _between_folders(first_folder: str, second_folder: str, checksum: bool):
+    """
+    Scans two folders and prints the differences between the two.
+
+    This will compare all child files and folders within the specified folders and print all files/folders that exist
+    under one folder but not the other or if two files have a different file size or SHA hash.
+    """
     _do_between_folders(first_folder, second_folder, checksum)
 
 
@@ -125,6 +131,16 @@ def _between_folders(first_folder: str, second_folder: str, checksum: bool):
 @click.argument('first_scan')
 @click.argument('second_scan')
 def _between_scans(first_scan: str, second_scan: str):
+    """
+    Compares two scan results and prints the differences between them.
+
+    This will compare all child files and folders within the specified folders and print all files/folders that exist
+    under one folder but not the other or if two files have a different file size or SHA hash.
+
+    This won't actually scan the files on disk. Rather, it just relies on the files and checksums listed in the scan
+    results. If either of the scan results doesn't contain the SHA hash of the files then no checksum comparison
+    will be made.s
+    """
     _do_between_scans(first_scan, second_scan)
 
 
@@ -133,6 +149,12 @@ def _between_scans(first_scan: str, second_scan: str):
 @click.argument('second_file')
 @click.option('--exact-hash', '-e', is_flag=True)
 def _between_files(first_file: str, second_file: str, exact_hash: bool):
+    """
+    Compares two files to determine if they are the same.
+
+    By default this will only check if the size of the files match. If the --exact-hash argument is provided then
+    this will also compute and compare a SHA hash of each file.
+    """
     _do_between_files(first_file, second_file, exact_hash)
 
 

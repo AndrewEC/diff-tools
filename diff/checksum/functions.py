@@ -41,15 +41,18 @@ def _calculate_max_block_size() -> int:
 
 
 def _calculate_block_info(path: Path) -> List[Tuple[int, int]]:
-    size = path.stat().st_size
-    last_chunk_size = size % _LARGE_FILE_CHUNK_SIZE
+    file_size = path.stat().st_size
+    last_chunk_size = file_size % _LARGE_FILE_CHUNK_SIZE
 
     if last_chunk_size == 0:
-        full_chunk_count = math.ceil(size / _LARGE_FILE_CHUNK_SIZE)
+        full_chunk_count = math.ceil(file_size / _LARGE_FILE_CHUNK_SIZE)
         return [(i * _LARGE_FILE_CHUNK_SIZE, _LARGE_FILE_CHUNK_SIZE) for i in range(full_chunk_count)]
 
-    full_chunk_count = math.ceil(size / _LARGE_FILE_CHUNK_SIZE) - 1
+    # The number of chunks that will have a byte count equal to _LARGE_FILE_CHUNK_SIZE
+    full_chunk_count = math.ceil(file_size / _LARGE_FILE_CHUNK_SIZE) - 1
     chunks = [(i * _LARGE_FILE_CHUNK_SIZE, _LARGE_FILE_CHUNK_SIZE) for i in range(full_chunk_count)]
+
+    # The last chunk that will have a byte count less than the _LARGE_FILE_CHUNK_SIZE
     chunks.append((_LARGE_FILE_CHUNK_SIZE * full_chunk_count, last_chunk_size))
     return chunks
 
@@ -59,6 +62,13 @@ def _next_block_size(remaining: int, max_block_size: int) -> int:
 
 
 def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
+    """
+    Takes in an argument identifying the location of the file, the starting byte of the chunk, and the number of bytes
+    that make up the chunk, and returns a hash of the chunk.
+
+    :param task_arguments: Specifies the file path, chunk start, and size.
+    :return: A hash of the chunk, portion, of the input file.
+    """
     remaining = task_arguments.size
     hasher = _get_hashing_function()
     with open(task_arguments.path, 'rb') as file:
@@ -74,7 +84,7 @@ def _calculate_checksum_for_chunk(task_arguments: _TaskArguments) -> str:
 def _pseudo_checksum(path: Path) -> str:
     block_info = _calculate_block_info(path)
     max_block_size = _calculate_max_block_size()
-    task_arguments = [_TaskArguments(path, block_info, max_block_size) for block_info in block_info]
+    task_arguments = [_TaskArguments(path, block, max_block_size) for block in block_info]
     with ThreadPoolExecutor(_TASK_COUNT) as executor:
         combined_hash = ''.join(list(executor.map(_calculate_checksum_for_chunk, task_arguments)))
     return _get_hashing_function().update(bytes(combined_hash, 'utf-8')).hexdigest()

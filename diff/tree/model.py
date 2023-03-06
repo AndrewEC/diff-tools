@@ -5,7 +5,20 @@ from pathlib import Path
 
 class PathTree:
 
+    """
+    A node representing either a file or a folder.
+    """
+
     def __init__(self, path: Path, size=-1, checksum=None, parent: PathTree = None):
+        """
+        Initializes the PathTree instance.
+
+        :param path: The Path to the file or folder the node will represent.
+        :param size: The size of the file. If a size of -1 is provided this will use the st_size of the file. If this
+            is a folder then the size will be left as -1
+        :param checksum: The SHA hash of the file. If this is a directory then this value should be None.
+        :param parent: The parent node.
+        """
         self.path = path
         self.size = path.stat().st_size if path.is_file() and size == -1 else size
         self.children: List[PathTree] = []
@@ -26,7 +39,7 @@ class PathTree:
             self.add_child(path)
 
     def get_child_directories(self) -> List[PathTree]:
-        return [child for child in self.children if child.path.is_dir()]
+        return [child for child in self.children if child.path.is_dir() or child.represents_directory()]
 
     def get_child_files(self) -> List[PathTree]:
         return [child for child in self.children if not child.represents_directory()]
@@ -35,6 +48,12 @@ class PathTree:
         return len(self.children) > 0
 
     def get_root(self) -> PathTree:
+        """
+        Retrieves the topmost parent of PathTree node. If this PathTree has no parent then the return value will be
+        self.
+
+        :return: The topmost parent node or self if this PathTree has no parent.
+        """
         value = self
         while value.parent is not None:
             value = value.parent

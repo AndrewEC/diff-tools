@@ -32,4 +32,9 @@ def _scan(folder: Path, output: str, checksum: bool):
 @click.argument('output')
 @click.option('--checksum', '-c', is_flag=True)
 def scan_command(folder: str, output: str, checksum: bool):
+    """
+    Scans a given folder and dumps the files, sizes, and checksums to a YAML file.
+
+    This will recursively scan all child files and directories of the specified folder.
+    """
     _scan(folder, output, checksum)

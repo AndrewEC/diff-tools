@@ -23,19 +23,19 @@ def find_similar_paths_between_trees(first_source_tree: PathTree, second_source_
     absolute path and check if it matches another path in the second path tree.
 
     For example:
-    The first path tree has a root of C:/ and a file with the absolute path of C:/Testing/123.png
-    The second path tree has a root of D:/ and a file with the absolute path of D:/Testing/123.png
+    The first path tree has a root of C:/ and a file with the absolute path of C:/Testing/123.png.
+    The second path tree has a root of D:/ and a file with the absolute path of D:/Testing/123.png.
     If we remove the root from both paths we get Testing/123.png and Testing/123.png which means these two files
     are considered similar from the perspective of their paths.
 
     :param first_source_tree: The first tree to traverse. From this tree we will pull all the files and their paths
-    and sizes to check against the second tree.
+        and sizes to check against the second tree.
     :param second_source_tree: The second tree. The files identified in the first tree will be looked up in the
-    second tree.
+        second tree.
     :param match_file_sizes: If true indicates that the file paths must be similar but their file sizes must also be
-    the same.
+        the same.
     :return: A list of tuples representing the files that have been identified as being similar to a file in the
-    second tree.
+        second tree.
     """
     def yield_similar(first_tree: PathTree, second_tree: PathTree) -> Generator[Tuple[PathTree, PathTree], None, None]:
         for first_tree_child in first_tree.children:

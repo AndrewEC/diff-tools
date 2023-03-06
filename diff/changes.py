@@ -88,4 +88,13 @@ def _changes(scan_results: Path, checksum: bool, override: Path):
 @click.option('--checksum', '-c', is_flag=True)
 @click.option('--override', '-o')
 def changes_command(scan: str, checksum: bool, override: str):
+    """
+    Compares the results of a previous scan file with the contents of the disk.
+
+    This will compare all child files and folders within the specified folders and print all files/folders that exist
+    under one folder but not the other or if two files have a different file size or SHA hash.
+
+    This will not compute the checksum if either the --checksum flag is not provided or if there are no checksums in
+    original scan results file.
+    """
     _changes(scan, checksum, override)
