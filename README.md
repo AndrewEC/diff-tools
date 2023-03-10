@@ -34,10 +34,16 @@ or to calculate and compare the fingerprints of two files:
 > python -m diff between files "<path_to_first_file>" "<path_to_second_file>"
 
 
-### fingerprint
-Utility to generate a checksum, or hash, or a specified file.
-* If the file is below 200 MB in size the hash will be a true Sha 256 hash
-* If the file is above 200 MB in size the hash will be a pseudo Sha 256 hash
+### hash
+Utility to generate a SHA hash of the specified file.
+* If the file is below 200 MB in size the hash will be a true SHA 256 hash
+* If the file is above 200 MB in size the hash will be a pseudo SHA 256 hash 
+
+Pseudo hash will break apart the larger file into chunks and concurrently hash each chunk then combine all hashes
+together into a single SHA 256 hash.
 
 Usage:
-> python -m diff checksum "C:\\<path_to_file_to_fingerprint>"
+> python -m diff hash calculate "C:\\<path_to_file_to_fingerprint>"
+
+or to verify if the file has a specific hash:
+> python -m diff hash verify "C:\\<path_to_file_to_fingerprint> <previously_computed_sha256_hash>"
