@@ -27,9 +27,9 @@ class _ArgumentValidator:
     def _validate_path(self, path: Path):
         validation_type = self._validation_type[self._next_validation_index]
         if validation_type == PathType.Directory and not path.is_dir():
-            raise Exception(f'The path [{path}] either does not exist or does not point to a directory.')
+            raise ValueError(f'The path [{path}] either does not exist or does not point to a directory.')
         elif validation_type == PathType.File and not path.is_file():
-            raise Exception(f'The path [{path}] either does not exist or does not point to a file.')
+            raise ValueError(f'The path [{path}] either does not exist or does not point to a file.')
         self._next_validation_index = self._next_validation_index + 1
 
 
