@@ -12,7 +12,7 @@ from diff.util.decorators import log_exception, valid_path, PathType
 @log_exception('The scan encountered an error.')
 @valid_path(PathType.Directory)
 def _scan(folder: Path, output: str, checksum: bool):
-    print(f'Scanning for files and folders in folder: [{folder}]')
+    print(f'Scanning directory: [{folder}]')
     tree = build_path_tree(folder)
 
     if checksum:

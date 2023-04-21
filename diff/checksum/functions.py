@@ -117,9 +117,9 @@ def get_checksum_function(path: Path, force_exact: bool = False) -> ChecksumFunc
 
     :param path: The path to the file to calculate the checksum of.
     :param force_exact: If true this will force the use of the exact hashing function even if the file size is above
-    the 200 megabyte threshold.
+     the 200 megabyte threshold.
     :return: A function that can be applied to calculate the hash of a given set of files. The function instance
-    can be re-used.
+     can be re-used.
     """
     if not force_exact and _file_size_in_megabytes(path) >= _LARGE_FILE_SIZE_THRESHOLD:
         return ChecksumFunction(ChecksumFunctionType.Pseudo, _pseudo_checksum)

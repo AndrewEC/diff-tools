@@ -139,7 +139,7 @@ def _between_scans(first_scan: str, second_scan: str):
 
     This won't actually scan the files on disk. Rather, it just relies on the files and checksums listed in the scan
     results. If either of the scan results doesn't contain the SHA hash of the files then no checksum comparison
-    will be made.s
+    will be made.
     """
     _do_between_scans(first_scan, second_scan)
 
@@ -150,10 +150,8 @@ def _between_scans(first_scan: str, second_scan: str):
 @click.option('--exact-hash', '-e', is_flag=True)
 def _between_files(first_file: str, second_file: str, exact_hash: bool):
     """
-    Compares two files to determine if they are the same.
-
-    By default this will only check if the size of the files match. If the --exact-hash argument is provided then
-    this will also compute and compare a SHA hash of each file.
+    Compares two files to determine if they are the same. This will compute a SHA 256 hash of each file and
+    compare the resulting hashes.
     """
     _do_between_files(first_file, second_file, exact_hash)
 

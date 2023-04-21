@@ -6,7 +6,11 @@ from .model import PathTree
 
 
 def _is_valid_path(path: Path) -> bool:
-    return path.is_file() or len(os.listdir(path)) > 0
+    try:
+        return path.is_file() or len(os.listdir(path)) > 0
+    except Exception as e:
+        print(f'Could not scan directory: [{path}]. Cause: [{e}]')
+        return False
 
 
 def _get_directory_contents(path: Path) -> List[Path]:
@@ -27,16 +31,13 @@ def build_path_tree(root_path: Path) -> PathTree:
     input root path.
     """
     def try_attach_children_under_path(path_to_traverse: PathTree):
-        try:
-            current_path = path_to_traverse.path
-            children = _get_directory_contents(current_path)
-            if len(children) == 0:
-                return
-            path_to_traverse.set_children(children)
-            for child_directory in path_to_traverse.get_child_directories():
-                try_attach_children_under_path(child_directory)
-        except Exception as e:
-            print(f'Could not scan directory: [{path_to_traverse}]. Cause: [{e}]')
+        current_path = path_to_traverse.path
+        children = _get_directory_contents(current_path)
+        if len(children) == 0:
+            return
+        path_to_traverse.set_children(children)
+        for child_directory in path_to_traverse.get_child_directories():
+            try_attach_children_under_path(child_directory)
 
     root = PathTree(root_path)
     try_attach_children_under_path(root)
