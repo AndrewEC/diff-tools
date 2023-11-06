@@ -1,8 +1,12 @@
 from pathlib import Path
 import os
-from typing import List
+from typing import List, Tuple
+from concurrent.futures import ThreadPoolExecutor
 
 from .model import PathTree
+
+
+_MAX_WORKERS = 3
 
 
 def _is_valid_path(path: Path) -> bool:
@@ -42,6 +46,17 @@ def build_path_tree(root_path: Path) -> PathTree:
     root = PathTree(root_path)
     try_attach_children_under_path(root)
     return root
+
+
+def build_path_trees(root_paths: List[Path]) -> Tuple[PathTree, ...]:
+    """
+    Concurrently scans multiple paths to build out the path tree representing all files on disk for each path.
+
+    :param root_paths: The list of paths that need to be scanned.
+    :return: The path trees made up of the files on disk for each corresponding input path.
+    """
+    with ThreadPoolExecutor(min(_MAX_WORKERS, len(root_paths))) as executor:
+        return tuple(executor.map(build_path_tree, root_paths))
 
 
 def rebuild_tree_from_folder_contents(source_tree: PathTree, override: Path = None) -> PathTree:

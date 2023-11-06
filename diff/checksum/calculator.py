@@ -12,7 +12,8 @@ _MAX_TASK_COUNT = 3
 def calculate_checksums(trees: List[PathTree]):
     """
     Calculates the checksums of all files represented by a PathTree instance from the input list. This will mutate
-    each PathTree instance by setting the checksum property.
+    each PathTree instance by setting the checksum property. This checksum will only be calculated and applied
+    to files and not folders.
 
     This is a multithreaded function and will use a thread pool executor with a maximum of 3 threads to calculate the
     checksums of each file.

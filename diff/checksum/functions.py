@@ -44,6 +44,8 @@ def _calculate_block_info(path: Path) -> List[Tuple[int, int]]:
     file_size = path.stat().st_size
     last_chunk_size = file_size % _LARGE_FILE_CHUNK_SIZE
 
+    # if the last_chunk_size is zero then it means the size of the file is evenly divisible by the chunk size
+    # meaning we don't need to compute the size of the remaining bytes in the last chunk when hashing the file
     if last_chunk_size == 0:
         full_chunk_count = math.ceil(file_size / _LARGE_FILE_CHUNK_SIZE)
         return [(i * _LARGE_FILE_CHUNK_SIZE, _LARGE_FILE_CHUNK_SIZE) for i in range(full_chunk_count)]
@@ -92,7 +94,7 @@ def _pseudo_checksum(path: Path) -> str:
 
 def _exact_checksum(path: Path) -> str:
     hasher = _get_hashing_function()
-    block_size = 128 * hasher.block_size
+    block_size = _calculate_max_block_size()
     with open(path, 'rb') as file:
         read = file.read(block_size)
         while len(read) > 0:

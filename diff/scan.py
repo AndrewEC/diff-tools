@@ -18,12 +18,12 @@ def _scan(folder: Path, output: str, checksum: bool):
     if checksum:
         calculate_checksums_for_all_files_in_tree(tree)
 
-    to_yaml_file(output, tree)
-
     dir_count = count_child_directories(tree)
     file_count = count_child_files(tree)
     print('\n===== ===== ===== ===== =====\n')
     print(f'Finished scan. Found [{dir_count}] directories and [{file_count}] files.')
+    print(f'Saving yml results to: [{output}]')
+    to_yaml_file(output, tree)
     print('\n===== ===== ===== ===== =====\n')
 
 

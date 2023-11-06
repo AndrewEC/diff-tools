@@ -26,8 +26,9 @@ def _hash(file_path: Path, exact_hash: bool):
 
 @log_exception('Could not validate the hash of the input file.')
 @valid_path(PathType.File)
-def _do_hashes_match(file_path: Path, hash: str):
-    actual_hash = _calculate_hash(file_path, True)
+def _do_hashes_match(file_path: Path, hash: str, exact_hash: bool):
+    print(f'Calculating SHA256 checksum of file: [{file_path}]')
+    actual_hash = _calculate_hash(file_path, exact_hash)
 
     print('\n===== ===== ===== ===== =====\n')
     print(f'Sha256 checksum of file is:\n\t{actual_hash}')
@@ -52,11 +53,12 @@ def _generate_hash_command(file: str, exact_hash: bool):
 @click.command('verify')
 @click.argument('file')
 @click.argument('hash')
-def _validate_hash_command(file: str, hash: str):
+@click.option('--exact-hash', '-e', is_flag=True)
+def _validate_hash_command(file: str, hash: str, exact_hash: bool):
     """
     Calculates the SHA-256 hash of the given file and verifies if it matches the input hash.
     """
-    _do_hashes_match(file, hash)
+    _do_hashes_match(file, hash, exact_hash)
 
 
 @click.group('hash')

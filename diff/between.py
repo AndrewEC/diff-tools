@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import click
 
-from diff.tree import PathTree, build_path_tree
+from diff.tree import PathTree, build_path_trees
 from diff.tree.io import from_yaml_file
 from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees, find_changed_files
 from diff.util.decorators import valid_path, PathType, log_exception
@@ -76,10 +76,8 @@ def _do_between_folders(first_folder_path: Path, second_folder_path: Path, check
     if first_folder_path == second_folder_path:
         raise Exception('Both paths point to the same directory. This utility should be used to find the differences '
                         'between two different directories.')
-    with ThreadPoolExecutor(2) as executor:
-        trees = list(executor.map(build_path_tree, [first_folder_path, second_folder_path]))
-    first_tree = trees[0]
-    second_tree = trees[1]
+
+    first_tree, second_tree = build_path_trees([first_folder_path, second_folder_path])
 
     if checksum:
         _calculate_checksums_of_similar_files(first_tree, second_tree)
@@ -103,7 +101,7 @@ def _do_between_scans(first_scan_path: Path, second_scan_path: Path):
 def _do_between_files(first_file: Path, second_file: Path, exact_hash: bool):
     if first_file == second_file:
         return print('Both paths point to the same file. This utility should be used to check the differences'
-                     ' between two files. Use the checksum utility to calculate the checksum of a single file.')
+                     ' between two files. Use the hash sub-command to calculate the fingerprint of a single file.')
     first_file_checksum, second_file_checksum = _calculate_checksums_of_files(first_file, second_file, exact_hash)
     if first_file_checksum != second_file_checksum:
         print('The checksums of the files do not match.')

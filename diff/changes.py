@@ -92,7 +92,7 @@ def changes_command(scan: str, checksum: bool, override: str):
     Compares the results of a previous scan file with the contents of the disk.
 
     This will compare all child files and folders within the specified folders and print all files/folders that exist
-    under one folder but not the other or if two files have a different file size or SHA hash.
+    under one folder but not the other and any files with the same patch but a differing file size of Sha 256 hash.
 
     This will not compute the checksum if either the --checksum flag is not provided or if there are no checksums in
     original scan results file.
