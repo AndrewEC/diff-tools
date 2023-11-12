@@ -1,9 +1,8 @@
 import click
 
-from .between import between_group
-from .changes import changes_command
-from .scan import scan_command
-from .hash import hash_group
+from .scan import scan
+from .between import between
+from .checksum import checksum
 
 
 @click.group()
@@ -11,10 +10,9 @@ def main():
     pass
 
 
-main.add_command(between_group)
-main.add_command(changes_command)
-main.add_command(scan_command)
-main.add_command(hash_group)
+main.add_command(scan)
+main.add_command(between)
+main.add_command(checksum)
 
 
 if __name__ == '__main__':

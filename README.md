@@ -3,47 +3,30 @@ Command line tools for detecting changes in the directory structure of a given f
 
 **Important**: It is recommended to run the `CreateVenv.ps1` script before executing any of the below commands.
 
-### scan
-Utility to scan the structure of all folders and files in a given folder and write them to a YAML file.
+### scan folder
+A command that will scan a directory, and all its nested contents, and write that structure to a YAML file.
+
+The first argument specifies the directory to scan, the second argument specifies the path to the YAML file
+where the scan results should be saved.
 
 Usage:
-> python -m diff scan "<path_to_folder_to_scan>" "scan_result.yml"
+> python -m diff scan folder "<path_to_folder_to_scan>" "scan_result.yml"
 
-### latest
-Utility to check for the following:
-* If any file or folder has been removed/renamed since the last scan
-* If any file size has changed since the last scan
-* Optionally calculate and compare checksums to ensure file equality with previous scan results
+### scan verify
+A command that will scan a directory, and all its nested contents, and compare the results of that scan to a previous
+scan YML file.
 
-Usage:
-> python -m diff changes "scan_result.yml"
-
-### changed
-Utility to check the diff between two given folders. This will check the following:
-* If any file or folder can be found in one folder but can't be found in the other
-* If any file between the two folders has the same path but a different file size
-* Optionally calculate and compare the checksum of two files to ensure equality
+The first argument specifies the directory to scan, the second argument specifies the path the existing YAML file
+where the scan results from the last scan were stored.
 
 Usage:
-> python -m diff between folders "<path_to_first_folder>" "<path_to_second_folder>"
+> python -m diff scan verify "<path_to_folder_to_scan>" "<path_to_existing_yml_file>"
 
-or to compare the differences between two previous scan results built using the `scan` command:
-> python -m diff between scans "C:\\scan.yml" "D:\\scan.yml"
-
-or to calculate and compare the fingerprints of two files:
-> python -m diff between files "<path_to_first_file>" "<path_to_second_file>"
-
-
-### hash
-Utility to generate a SHA hash of the specified file.
-* If the file is below 200 MB in size the hash will be a true SHA 256 hash
-* If the file is above 200 MB in size the hash will be a pseudo SHA 256 hash 
-
-Pseudo hash will break apart the larger file into chunks and concurrently hash each chunk then combine all hashes
-together into a single SHA 256 hash.
+### between
+A command that will scan two directories, and all the nested contents of each, and compare said structures to identify:
+1. Files that are "similar" (similar refers to files that have the same name but a different file size or checksum).
+2. Files exist in the first folder but not in the second.
+3. Files exist in the second folder but not in the first.
 
 Usage:
-> python -m diff hash calculate "C:\\<path_to_file_to_fingerprint>"
-
-or to verify if the file has a specific hash:
-> python -m diff hash verify "C:\\<path_to_file_to_fingerprint> <previously_computed_sha256_hash>"
+> python -m diff between "<path_to_first_folder_to_scan>" "<path_to_second_folder_to_scan>"

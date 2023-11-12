@@ -1,164 +1,64 @@
-from typing import List, Tuple
 from pathlib import Path
-
-from concurrent.futures import ThreadPoolExecutor
 
 import click
 
-from diff.tree import PathTree, build_path_trees
-from diff.tree.io import from_yaml_file
-from diff.tree.find import find_missing_paths_between_trees, find_similar_paths_between_trees, find_changed_files
-from diff.util.decorators import valid_path, PathType, log_exception
-from diff.checksum import calculate_checksums_of_two_trees, get_checksum_function, ChecksumFunctionType
+from diff.tree import read_tree_from_disk, diff_between_trees
 
 
-def _print_missing_files_and_folders(missing_paths: List[PathTree], first_folder: Path, second_folder: Path):
-    if len(missing_paths) == 0:
-        return print(f'All files in folder [{first_folder}] were found in [{second_folder}].')
+@click.command()
+@click.argument('first')
+@click.argument('second')
+@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
+                                                     ' each file found in the scan.')
+def between(first: str, second: str, checksum: bool):
+    """
+    Scans two directories, specified by the first and second paths, and compares the structure of the two.
 
-    for missing_path in missing_paths:
-        if missing_path.represents_directory():
-            print(f'Directory found at [{missing_path.path}] is missing from [{second_folder}]')
-        else:
-            print(f'File found at [{missing_path.path}] is missing from [{second_folder}]')
+    This will identify all files that are similar (have the same name but different size or checksum), all files
+    that exist within the first directory but not the second, and all files that exist within the second directory but
+    not the first.
+    """
 
+    first_path = Path(first).absolute()
+    if not first_path.is_dir():
+        raise ValueError('The first path to scan must point to a directory. The first path is either not a directory or does not exist.')
 
-def _print_changed_files(differences: List[Tuple[PathTree, PathTree]]):
-    if len(differences) == 0:
-        return print('All common files between folders appear to be the same.')
+    second_path = Path(second).absolute()
+    if not second_path.is_dir():
+        raise ValueError('The second path to scan must point to a directory. The second path is either not a directory or does not exist.')
 
-    for difference in differences:
-        print(f'Two similarly named files that contain different contents were found:')
-        for diff in difference:
-            print(f'\t[{diff.path}]')
+    if first == second:
+        raise ValueError('The first path to scan and the second path to scan cannot refer to the same location.')
 
+    first_tree = read_tree_from_disk(first_path, checksum)
+    second_tree = read_tree_from_disk(second_path, checksum)
+    diff_result = diff_between_trees(first_tree, second_tree)
 
-def _calculate_checksums_of_similar_files(first_tree: PathTree, second_tree: PathTree):
-    def similar_paths_at_index(index: int, similar: List[Tuple[PathTree, PathTree]]) -> List[PathTree]:
-        return [path_tree[index] for path_tree in similar]
-
-    similar_paths = find_similar_paths_between_trees(first_tree, second_tree, True)
-    first_tree_paths = similar_paths_at_index(0, similar_paths)
-    second_tree_paths = similar_paths_at_index(1, similar_paths)
-    print(f'Calculating checksums for [{len(similar_paths)}] files common between both folders.')
-    calculate_checksums_of_two_trees(first_tree_paths, second_tree_paths)
-
-
-def _find_and_print_changes(first_tree: PathTree, second_tree: PathTree):
-    first_missing = find_missing_paths_between_trees(first_tree, second_tree)
-    second_missing = find_missing_paths_between_trees(second_tree, first_tree)
-    changed_files = find_changed_files(first_tree, second_tree)
-
-    print('\n===== ===== ===== ===== =====\n')
-    _print_missing_files_and_folders(first_missing, first_tree.path, second_tree.path)
-    print('\n===== ===== ===== ===== =====\n')
-    _print_missing_files_and_folders(second_missing, second_tree.path, first_tree.path)
-    print('\n===== ===== ===== ===== =====\n')
-    _print_changed_files(changed_files)
-    print('\n===== ===== ===== ===== =====\n')
-
-
-def _calculate_checksums_of_files(first: Path, second: Path, exact_hash: bool) -> List[str]:
-    def do_calculate_checksum(file_path: Path) -> str:
-        print(f'Calculating checksum of file: [{file_path}]')
-        checksum_function = get_checksum_function(file_path, exact_hash)
-        if checksum_function.function_type == ChecksumFunctionType.Pseudo:
-            print(f'File [{file_path}] is over 200 megabytes. Checksum will be calculated as a pseudo checksum.')
-        return checksum_function.apply(file_path)
-
-    with ThreadPoolExecutor(2) as executor:
-        return list(executor.map(do_calculate_checksum, [first, second]))
-
-
-@log_exception('Could not finish scanning both input folders.')
-@valid_path(PathType.Directory, PathType.Directory)
-def _do_between_folders(first_folder_path: Path, second_folder_path: Path, checksum: bool):
-    if first_folder_path == second_folder_path:
-        raise Exception('Both paths point to the same directory. This utility should be used to find the differences '
-                        'between two different directories.')
-
-    first_tree, second_tree = build_path_trees([first_folder_path, second_folder_path])
-
-    if checksum:
-        _calculate_checksums_of_similar_files(first_tree, second_tree)
-
-    _find_and_print_changes(first_tree, second_tree)
-
-
-@log_exception('Could not detect all changes between scans.')
-@valid_path(PathType.File, PathType.File)
-def _do_between_scans(first_scan_path: Path, second_scan_path: Path):
-    if first_scan_path == second_scan_path:
-        raise Exception('Both paths point to the same file. This utility should be used to verify the differences '
-                        'between two different scan results.')
-    first_tree = from_yaml_file(first_scan_path)
-    second_tree = from_yaml_file(second_scan_path)
-    _find_and_print_changes(first_tree, second_tree)
-
-
-@log_exception('Could not compute fingerprints for both files.')
-@valid_path(PathType.File, PathType.File)
-def _do_between_files(first_file: Path, second_file: Path, exact_hash: bool):
-    if first_file == second_file:
-        return print('Both paths point to the same file. This utility should be used to check the differences'
-                     ' between two files. Use the hash sub-command to calculate the fingerprint of a single file.')
-    first_file_checksum, second_file_checksum = _calculate_checksums_of_files(first_file, second_file, exact_hash)
-    if first_file_checksum != second_file_checksum:
-        print('The checksums of the files do not match.')
+    print('\n----- Similar -----')
+    if len(diff_result.similar) > 0:
+        print('The following files have the same path but different checksums or file sizes.')
+        for similar in diff_result.similar:
+            print(f'\t[{similar[0].path_to_node()}] -> [{similar[1].path_to_node()}]')
     else:
-        print('Both files have the same checksums.')
-    print(f'[{first_file}] :: [{first_file_checksum}]')
-    print(f'[{second_file}] :: [{second_file_checksum}]')
+        print('No files with similar paths but different checksums or file sizes were found.')
 
+    print('')
 
-@click.command('folders')
-@click.argument('first_folder')
-@click.argument('second_folder')
-@click.option('--checksum', '-c', is_flag=True)
-def _between_folders(first_folder: str, second_folder: str, checksum: bool):
-    """
-    Scans two folders and prints the differences between the two.
+    print('----- Differences -----')
+    if len(diff_result.first_tree.missing) > 0:
+        print(f'The following files were found in [{second_tree.path_to_node()}] but not in [{first_tree.path_to_node()}]:')
+        for missing in diff_result.first_tree.missing:
+            print(f'\t[{missing.path_to_node()}]')
+    else:
+        print(f'All files found in [{second_tree.path_to_node()}] were also found in [{first_tree.path_to_node()}].')
 
-    This will compare all child files and folders within the specified folders and print all files/folders that exist
-    under one folder but not the other or if two files have a different file size or SHA hash.
-    """
-    _do_between_folders(first_folder, second_folder, checksum)
+    print('')
 
+    if len(diff_result.second_tree.missing) > 0:
+        print(f'The following files were found in [{first_tree.path_to_node()}] but not in [{second_tree.path_to_node()}]:')
+        for missing in diff_result.second_tree.missing:
+            print(f'\t[{missing.path_to_node()}]')
+    else:
+        print(f'All files found in [{first_tree.path_to_node()}] were also found in [{second_tree.path_to_node()}].')
 
-@click.command('scans')
-@click.argument('first_scan')
-@click.argument('second_scan')
-def _between_scans(first_scan: str, second_scan: str):
-    """
-    Compares two scan results and prints the differences between them.
-
-    This will compare all child files and folders within the specified folders and print all files/folders that exist
-    under one folder but not the other or if two files have a different file size or SHA hash.
-
-    This won't actually scan the files on disk. Rather, it just relies on the files and checksums listed in the scan
-    results. If either of the scan results doesn't contain the SHA hash of the files then no checksum comparison
-    will be made.
-    """
-    _do_between_scans(first_scan, second_scan)
-
-
-@click.command('files')
-@click.argument('first_file')
-@click.argument('second_file')
-@click.option('--exact-hash', '-e', is_flag=True)
-def _between_files(first_file: str, second_file: str, exact_hash: bool):
-    """
-    Compares two files to determine if they are the same. This will compute a SHA 256 hash of each file and
-    compare the resulting hashes.
-    """
-    _do_between_files(first_file, second_file, exact_hash)
-
-
-@click.group('between')
-def between_group():
-    pass
-
-
-between_group.add_command(_between_folders)
-between_group.add_command(_between_scans)
-between_group.add_command(_between_files)
+    print('')
