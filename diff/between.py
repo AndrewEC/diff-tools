@@ -1,4 +1,5 @@
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 import click
 
@@ -30,8 +31,11 @@ def between(first: str, second: str, checksum: bool):
     if first == second:
         raise ValueError('The first path to scan and the second path to scan cannot refer to the same location.')
 
-    first_tree = read_tree_from_disk(first_path, checksum)
-    second_tree = read_tree_from_disk(second_path, checksum)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first_execution = executor.submit(read_tree_from_disk, first_path, checksum)
+        second_execution = executor.submit(read_tree_from_disk, second_path, checksum)
+        first_tree = first_execution.result()
+        second_tree = second_execution.result()
     diff_result = diff_between_trees(first_tree, second_tree)
 
     print('\n----- Similar -----')

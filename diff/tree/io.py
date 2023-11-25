@@ -54,7 +54,7 @@ def read_tree_from_disk(path: Path, compute_checksums: bool) -> Node:
     If compute_checksums is specified as True then this will also compute the checksum of all files and attach
     said checksum to each Node representing said files.
 
-    :param path:
+    :param path: The path to the directory whose contents are to be scanned by this function.
     :param compute_checksums: If true this will compute the checksum of all files within the specified path.
     :return: The new Node instance initialized from the disk contents.
     """
@@ -66,7 +66,7 @@ def read_tree_from_disk(path: Path, compute_checksums: bool) -> Node:
             return
         for child_path in child_paths:
             checksum = None
-            if compute_checksums:
+            if compute_checksums and child_path.is_file():
                 checksum = compute_file_hash(child_path)
             child_node = Node.from_disk(current_node, child_path, checksum)
             attach_children(child_path, child_node)
