@@ -5,6 +5,13 @@ import hashlib
 from .node import Node
 from .yml import read_yaml_file
 
+DEFAULT_HASH_ALGORITHM = 'sha256'
+
+AVAILABLE_HASH_ALGORITHMS = [
+    'sha1',
+    DEFAULT_HASH_ALGORITHM,
+    'sha512'
+]
 
 def read_tree_from_yaml(file_path: Path) -> Node:
     """
@@ -21,11 +28,19 @@ def read_tree_from_yaml(file_path: Path) -> Node:
         raise Exception(f'Could not parse previous scan yml file. Cause: [{e}]', e)
 
 
-def compute_file_hash(path: Path, algo: str = 'sha256') -> str:
-    if not path.is_file():
-        print(f'Could not compute hash because path does not point to a file: [{path}]')
-        return ''
+def compute_file_checksum(path: Path, algo: str) -> str:
+    """
+    Computes the hash of a file at the given path using the specified hash algorithm.
+
+    :param path: The absolute path to the file on disk whose hash is to be computed.
+    :param algo: The algorithm to use to compute the hash of the file.
+    :return: The computed hash of the file.
+    :raises Exception: An exception will be raised if the specified hashing algorithm does not exist.
+    """
     print(f'Computing checksum of file: [{path}]')
+    if not hasattr(hashlib, algo):
+        raise Exception('The specified checksum algorithm, [{}], does not appear to be available on this system. '
+                        'Choose another hash algorithm and try again.')
     file_hash = getattr(hashlib, algo)()
     with open(path, 'rb') as file:
         while chunk := file.read(file_hash.block_size):
@@ -40,11 +55,11 @@ def _get_child_paths(path: Path) -> List[Path]:
     try:
         return list(path.iterdir())
     except Exception as e:
-        print(f'Could not read path: [{path}]. Cause: [{e}]')
+        print(f'A directory could not be scanned. The following directory will be skipped: [{path}]. Reason: [{e}]')
         return []
 
 
-def read_tree_from_disk(path: Path, compute_checksums: bool) -> Node:
+def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str) -> Node:
     """
     Initializes a full Node tree from the contents of a path on disk.
 
@@ -56,6 +71,7 @@ def read_tree_from_disk(path: Path, compute_checksums: bool) -> Node:
 
     :param path: The path to the directory whose contents are to be scanned by this function.
     :param compute_checksums: If true this will compute the checksum of all files within the specified path.
+    :param algo: The algorithm to use to compute the checksum of the files on disk.
     :return: The new Node instance initialized from the disk contents.
     """
     def attach_children(current_path: Path, current_node: Node):
@@ -67,7 +83,7 @@ def read_tree_from_disk(path: Path, compute_checksums: bool) -> Node:
         for child_path in child_paths:
             checksum = None
             if compute_checksums and child_path.is_file():
-                checksum = compute_file_hash(child_path)
+                checksum = compute_file_checksum(child_path, algo)
             child_node = Node.from_disk(current_node, child_path, checksum)
             attach_children(child_path, child_node)
     print(f'Scanning contents of: [{path}]')

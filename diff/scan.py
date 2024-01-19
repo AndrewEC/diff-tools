@@ -1,7 +1,9 @@
 from pathlib import Path
 import click
 
-from diff.tree import read_tree_from_disk, to_yaml_file, read_tree_from_yaml, diff_between_trees
+from diff.tree import (read_tree_from_disk, to_yaml_file, read_tree_from_yaml, diff_between_trees,
+                       DEFAULT_HASH_ALGORITHM, AVAILABLE_HASH_ALGORITHMS)
+from diff.errors import NotADirectoryException, NotAFileException
 
 
 @click.command('folder')
@@ -9,7 +11,8 @@ from diff.tree import read_tree_from_disk, to_yaml_file, read_tree_from_yaml, di
 @click.argument('output')
 @click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
                                                      ' each file found in the scan.')
-def _folder(path: str, output: str, checksum: bool):
+@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+def _folder(path: str, output: str, checksum: bool, algo: str):
     """
     Scans a given directory and saves the results of the scan to a yaml file.
 
@@ -20,14 +23,14 @@ def _folder(path: str, output: str, checksum: bool):
 
     path_to_scan = Path(path).absolute()
     if not path_to_scan.is_dir():
-        raise ValueError('The path to scan must be a directory. Current path is either not a directory or does not exist.')
+        raise NotADirectoryException('path to scan', path_to_scan)
 
     output_path = Path(output).absolute()
     if output_path.is_file():
         raise ValueError(f'The output path already exists. Delete the following file and try again: [{output_path}]')
 
     print(f'Scanning path: [{path_to_scan}]')
-    root_node = read_tree_from_disk(path_to_scan, checksum)
+    root_node = read_tree_from_disk(path_to_scan, checksum, algo)
 
     to_yaml_file(output_path, root_node)
     print(f'Scan results saved to: [{output_path}]')
@@ -35,9 +38,9 @@ def _folder(path: str, output: str, checksum: bool):
 
 @click.command('verify')
 @click.argument('scan')
-@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
-                                                     ' each file found in the scan.')
-def _verify(scan: str, checksum: bool):
+@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for each file found in the scan.')
+@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+def _verify(scan: str, checksum: bool, algo: str):
     """
     Checks if the results of a previous scan match what is currently on disk.
 
@@ -49,14 +52,14 @@ def _verify(scan: str, checksum: bool):
 
     scan_path = Path(scan).absolute()
     if not scan_path.is_file():
-        raise ValueError('The scan path must point to the location of a previously saved scan.')
+        raise NotAFileException('previous scan', scan_path)
 
     scan_tree = read_tree_from_yaml(scan_path)
     root_path = scan_tree.path_to_node()
     if not root_path.is_dir():
         raise Exception(f'Could not verify scan because the original scanned directory could not be found at: [{root_path}]')
 
-    disk_tree = read_tree_from_disk(root_path, checksum)
+    disk_tree = read_tree_from_disk(root_path, checksum, algo)
     diff_result = diff_between_trees(scan_tree, disk_tree)
 
     print('\n----- Similar -----')

@@ -3,7 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import click
 
-from diff.tree import read_tree_from_disk, diff_between_trees
+from diff.tree import read_tree_from_disk, diff_between_trees, DEFAULT_HASH_ALGORITHM, AVAILABLE_HASH_ALGORITHMS
+from diff.errors import NotADirectoryException
 
 
 @click.command()
@@ -11,7 +12,8 @@ from diff.tree import read_tree_from_disk, diff_between_trees
 @click.argument('second')
 @click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
                                                      ' each file found in the scan.')
-def between(first: str, second: str, checksum: bool):
+@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+def between(first: str, second: str, checksum: bool, algo: str):
     """
     Scans two directories, specified by the first and second paths, and compares the structure of the two.
 
@@ -22,18 +24,18 @@ def between(first: str, second: str, checksum: bool):
 
     first_path = Path(first).absolute()
     if not first_path.is_dir():
-        raise ValueError('The first path to scan must point to a directory. The first path is either not a directory or does not exist.')
+        raise NotADirectoryException('first path', first_path)
 
     second_path = Path(second).absolute()
     if not second_path.is_dir():
-        raise ValueError('The second path to scan must point to a directory. The second path is either not a directory or does not exist.')
+        raise NotADirectoryException('second path', second_path)
 
     if first == second:
         raise ValueError('The first path to scan and the second path to scan cannot refer to the same location.')
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        first_execution = executor.submit(read_tree_from_disk, first_path, checksum)
-        second_execution = executor.submit(read_tree_from_disk, second_path, checksum)
+        first_execution = executor.submit(read_tree_from_disk, first_path, checksum, algo)
+        second_execution = executor.submit(read_tree_from_disk, second_path, checksum, algo)
         first_tree = first_execution.result()
         second_tree = second_execution.result()
     diff_result = diff_between_trees(first_tree, second_tree)

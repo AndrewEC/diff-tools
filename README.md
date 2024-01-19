@@ -30,3 +30,16 @@ A command that will scan two directories, and all the nested contents of each, a
 
 Usage:
 > python -m diff between "<path_to_first_folder_to_scan>" "<path_to_second_folder_to_scan>"
+
+### checksum calculate
+A command to calculate a checksum, sometimes called a fingerprint, of a single file.
+
+Usage:
+> python -m diff checksum calculate "<path_to_file_to_compute_checksum_of>"
+
+### checksum verify
+A command to verify the checksum of a file. This will compute the checksum of the file the compare the
+computed checksum to a previously computed checksum.
+
+Usage:
+> python -m diff checksum verify "<path_to_file_to_compute_checksum_of>" <previous_checksum>

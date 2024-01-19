@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 
-_MESSAGE_TEMPLATE = 'Could not read Node. "{}" is missing.'
+_MESSAGE_TEMPLATE = 'Could not read Node. Require property "{}" is missing.'
 _REQUIRED_KEYS = ['name', 'size', 'checksum', 'children']
 
 

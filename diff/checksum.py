@@ -2,12 +2,13 @@ from pathlib import Path
 
 import click
 
-from diff.tree import compute_file_hash
+from diff.tree import compute_file_checksum, AVAILABLE_HASH_ALGORITHMS, DEFAULT_HASH_ALGORITHM
+from diff.errors import NotAFileException
 
 
 @click.command('calculate')
 @click.argument('path')
-@click.option('--algo', '-a', type=click.Choice(['sha256', 'sha512']), default='sha256', help='The preferred algorithm to hash the file with.')
+@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
 def _calculate(path: str, algo: str):
     """
     Computes the hash of a given file.
@@ -16,16 +17,16 @@ def _calculate(path: str, algo: str):
     """
     path_to_compute = Path(path)
     if not path_to_compute.is_file():
-        raise ValueError('The path to compute the checksum of must point to a file. The path provided either does not exist or is not a file.')
-    file_hash = compute_file_hash(path_to_compute, algo)
+        raise NotAFileException('file', path_to_compute)
+    file_hash = compute_file_checksum(path_to_compute, algo)
     print(f'The file hash is: {file_hash}')
 
 
-@click.command('validate')
+@click.command('verify')
 @click.argument('path')
 @click.argument('hash')
-@click.option('--algo', '-a', type=click.Choice(['sha256', 'sha512']), default='sha256', help='The preferred algorithm to hash the file with.')
-def _validate(path: str, hash: str, algo: str):
+@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+def _verify(path: str, hash: str, algo: str):
     """
     Computes the has of a given file and compares the computed hash to the provided hash for equality.
 
@@ -35,8 +36,8 @@ def _validate(path: str, hash: str, algo: str):
     """
     path_to_compute = Path(path)
     if not path_to_compute.is_file():
-        raise ValueError('The path to compute the checksum of must point to a file. The path provided either does not exist or is not a file.')
-    file_hash = compute_file_hash(path_to_compute, algo)
+        raise NotAFileException('file', path_to_compute)
+    file_hash = compute_file_checksum(path_to_compute, algo)
     if file_hash != hash:
         print('The calculated file has and the existing hash do not match.')
         print('Hashes are:')
@@ -52,4 +53,4 @@ def checksum():
 
 
 checksum.add_command(_calculate)
-checksum.add_command(_validate)
+checksum.add_command(_verify)
