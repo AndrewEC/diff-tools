@@ -3,7 +3,7 @@ from typing import List, Dict, Generator, Tuple
 from .node import Node
 
 
-class TreeResult:
+class MissingResult:
 
     def __init__(self, tree_node: Node, missing: List[Node]):
         self.tree_node = tree_node
@@ -12,7 +12,7 @@ class TreeResult:
 
 class DiffResult:
 
-    def __init__(self, similar: List[Tuple[Node, Node]], first_tree: TreeResult, second_tree: TreeResult):
+    def __init__(self, similar: List[Tuple[Node, Node]], first_tree: MissingResult, second_tree: MissingResult):
         self.similar = similar
         self.first_tree = first_tree
         self.second_tree = second_tree
@@ -54,8 +54,19 @@ def _find_similar(first_tree_nodes: Dict[str, Node], second_tree_nodes: Dict[str
     return similarities
 
 
+def _has_parent_in_missing_list(all_missing_nodes: List[Node], node: Node) -> bool:
+    while node.parent is not None:
+        if node.parent in all_missing_nodes:
+            return True
+        node = node.parent
+    return False
+
+
 def _find_missing(first_tree_nodes: Dict[str, Node], second_tree_nodes: Dict[str, Node]) -> List[Node]:
-    return [first_tree_nodes[path] for path in first_tree_nodes.keys() if path not in second_tree_nodes]
+    all_missing_nodes = [first_tree_nodes[path] for path in first_tree_nodes.keys() if path not in second_tree_nodes]
+    # If the parent directory of a file is missing from the second tree then we should just list
+    # the parent directory as missing instead of all the files within said directory.
+    return [node for node in all_missing_nodes if not _has_parent_in_missing_list(all_missing_nodes, node)]
 
 
 def diff_between_trees(first_tree: Node, second_tree: Node) -> DiffResult:
@@ -77,6 +88,6 @@ def diff_between_trees(first_tree: Node, second_tree: Node) -> DiffResult:
     nodes_not_in_first_tree = _find_missing(second_tree_nodes, first_tree_nodes)
     return DiffResult(
         similar,
-        TreeResult(first_tree, nodes_not_in_first_tree),
-        TreeResult(second_tree, nodes_not_in_second_tree)
+        MissingResult(first_tree, nodes_not_in_first_tree),
+        MissingResult(second_tree, nodes_not_in_second_tree)
     )

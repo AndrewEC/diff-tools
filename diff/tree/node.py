@@ -8,16 +8,10 @@ _MESSAGE_TEMPLATE = 'Could not read Node. Require property "{}" is missing.'
 _REQUIRED_KEYS = ['name', 'size', 'checksum', 'children']
 
 
-def _find_missing_key(value: Dict) -> str | None:
-    return next((key for key in _REQUIRED_KEYS if key not in value), None)
-
-
 def _validate_node_dict(value: Dict):
-    missing_key = _find_missing_key(value)
-    if missing_key is None:
-        return
-    raise ValueError(_MESSAGE_TEMPLATE.format(missing_key))
-
+    missing_required_key = next((key for key in _REQUIRED_KEYS if key not in value), None)
+    if missing_required_key is not None:
+        raise ValueError(_MESSAGE_TEMPLATE.format(missing_required_key))
 
 
 class Node:
