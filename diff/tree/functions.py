@@ -35,22 +35,30 @@ def _flatten(root_node: Node) -> Dict[str, Node]:
     return {value[0]: value[1] for value in flatten(root_node)}
 
 
-def _are_different(first: Node, second: Node) -> bool:
+def _are_nodes_different(first: Node, second: Node) -> bool:
     if first.checksum != '' and second.checksum != '' and first.checksum != second.checksum:
         return True
     if first.size != second.size:
         return True
 
 
-def _find_similar(first_tree_nodes: Dict[str, Node], second_tree_nodes: Dict[str, Node]) -> List[Tuple[Node, Node]]:
+def _find_similar_nodes(first_tree_nodes: Dict[str, Node], second_tree_nodes: Dict[str, Node]) -> List[Tuple[Node, Node]]:
+    """
+    Identifies nodes that are similar but different between both trees.
+
+    This will iterate through all the nodes in the first tree, identify nodes in the first tree whose path is
+    the same as a node in the second tree, and returns a tuple of the nodes that have the same paths
+    but different file sizes or checksums.
+    """
+
     similarities = []
-    for key in first_tree_nodes.keys():
-        if key not in second_tree_nodes:
+    for first_tree_node_path in first_tree_nodes.keys():
+        if first_tree_node_path not in second_tree_nodes:
             continue
-        first = first_tree_nodes[key]
-        second = second_tree_nodes[key]
-        if _are_different(first, second):
-            similarities.append((first, second))
+        first_node = first_tree_nodes[first_tree_node_path]
+        second_node = second_tree_nodes[first_tree_node_path]
+        if _are_nodes_different(first_node, second_node):
+            similarities.append((first_node, second_node))
     return similarities
 
 
@@ -83,7 +91,7 @@ def diff_between_trees(first_tree: Node, second_tree: Node) -> DiffResult:
     """
     first_tree_nodes = _flatten(first_tree)
     second_tree_nodes = _flatten(second_tree)
-    similar = _find_similar(first_tree_nodes, second_tree_nodes)
+    similar = _find_similar_nodes(first_tree_nodes, second_tree_nodes)
     nodes_not_in_second_tree = _find_missing(first_tree_nodes, second_tree_nodes)
     nodes_not_in_first_tree = _find_missing(second_tree_nodes, first_tree_nodes)
     return DiffResult(

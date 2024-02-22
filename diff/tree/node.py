@@ -8,7 +8,7 @@ _MESSAGE_TEMPLATE = 'Could not read Node. Require property "{}" is missing.'
 _REQUIRED_KEYS = ['name', 'size', 'checksum', 'children']
 
 
-def _validate_node_dict(value: Dict):
+def _validate_required_properties(value: Dict):
     missing_required_key = next((key for key in _REQUIRED_KEYS if key not in value), None)
     if missing_required_key is not None:
         raise ValueError(_MESSAGE_TEMPLATE.format(missing_required_key))
@@ -47,6 +47,8 @@ class Node:
         while current_parent is not None:
             path_segments.append(current_parent.name)
             current_parent = current_parent.parent
+        if len(path_segments) == 0:
+            return Path(path_segments[0])
         return Path(os.path.join(*list(reversed(path_segments))))
 
     def to_dict(self) -> Dict:
@@ -95,7 +97,7 @@ class Node:
         :param values: The dictionary containing the values to initialize the new Node.
         :return: A newly initialized Node with the constructor values pulled from the values dict.
         """
-        _validate_node_dict(values)
+        _validate_required_properties(values)
         node = Node(parent, values['name'], int(values['size']), values['checksum'])
         if parent is not None:
             parent.attach_child(node)
