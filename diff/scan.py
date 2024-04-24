@@ -73,7 +73,7 @@ def _verify(scan: str, checksum: bool, algo: str):
 
     print('')
 
-    print('----- Differences -----')
+    print('----- Different -----')
     if len(diff_result.first_tree.missing) > 0:
         print(f'The following files were found on disk but not in the previous scan result (new files):')
         for missing in diff_result.first_tree.missing:

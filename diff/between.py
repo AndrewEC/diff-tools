@@ -50,7 +50,7 @@ def between(first: str, second: str, checksum: bool, algo: str):
 
     print('')
 
-    print('----- Differences -----')
+    print('----- Different -----')
     if len(diff_result.first_tree.missing) > 0:
         print(f'The following files were found in [{second_tree.path_to_node()}] but not in [{first_tree.path_to_node()}]:')
         for missing in diff_result.first_tree.missing:
