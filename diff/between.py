@@ -3,16 +3,27 @@ from concurrent.futures import ThreadPoolExecutor
 
 import click
 
-from diff.tree import read_tree_from_disk, diff_between_trees, DEFAULT_HASH_ALGORITHM, AVAILABLE_HASH_ALGORITHMS
+from diff.tree import (read_tree_from_disk, diff_between_trees,
+                       DEFAULT_HASH_ALGORITHM, AVAILABLE_HASH_ALGORITHMS)
 from diff.errors import NotADirectoryException
 
 
 @click.command()
 @click.argument('first')
 @click.argument('second')
-@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
-                                                     ' each file found in the scan.')
-@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+@click.option(
+    '--checksum',
+    '-c',
+    is_flag=True,
+    help='Specifies if the checksum should be calculated for each file found in the scan.'
+)
+@click.option(
+    '--algo',
+    '-a',
+    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
+    default=DEFAULT_HASH_ALGORITHM,
+    help='The preferred algorithm to hash the file with.'
+)
 def between(first: str, second: str, checksum: bool, algo: str):
     """
     Scans two directories, specified by the first and second paths, and compares the structure of the two.

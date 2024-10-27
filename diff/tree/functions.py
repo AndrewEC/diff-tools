@@ -27,7 +27,7 @@ def _flatten(root_node: Node) -> Dict[str, Node]:
     def flatten(node: Node) -> Generator[Tuple, None, None]:
         for child in node.children:
             yield _path_to_node_without_root(root_node, child), child
-            if len(child.children) > 0:
+            if child.children is not None and len(child.children) > 0:
                 yield from flatten(child)
 
     if len(root_node.children) == 0:

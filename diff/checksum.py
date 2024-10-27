@@ -15,7 +15,13 @@ def _compute_file_hash(path: str, algo: str) -> str:
 
 @click.command('calculate')
 @click.argument('path')
-@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+@click.option(
+    '--algo',
+    '-a',
+    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
+    default=DEFAULT_HASH_ALGORITHM,
+    help='The preferred algorithm to hash the file with.'
+)
 def _calculate(path: str, algo: str):
     """
     Computes the hash of a given file.
@@ -29,7 +35,13 @@ def _calculate(path: str, algo: str):
 @click.command('verify')
 @click.argument('path')
 @click.argument('hash')
-@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+@click.option(
+    '--algo',
+    '-a',
+    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
+    default=DEFAULT_HASH_ALGORITHM,
+    help='The preferred algorithm to hash the file with.'
+)
 def _verify(path: str, hash: str, algo: str):
     """
     Computes the hash of a given file and compares said computed hash to the provided hash for equality.

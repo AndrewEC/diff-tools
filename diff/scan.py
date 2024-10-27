@@ -9,9 +9,19 @@ from diff.errors import NotADirectoryException, NotAFileException
 @click.command('folder')
 @click.argument('path')
 @click.argument('output')
-@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for'
-                                                     ' each file found in the scan.')
-@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
+@click.option(
+    '--checksum',
+    '-c',
+    is_flag=True,
+    help='Specifies if the checksum should be calculated for each file found in the scan.'
+)
+@click.option(
+    '--algo',
+    '-a',
+    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
+    default=DEFAULT_HASH_ALGORITHM,
+    help='The preferred algorithm to hash the file with.'
+)
 def _folder(path: str, output: str, checksum: bool, algo: str):
     """
     Scans a given directory and saves the results of the scan to a yaml file.
@@ -38,9 +48,13 @@ def _folder(path: str, output: str, checksum: bool, algo: str):
 
 @click.command('verify')
 @click.argument('scan')
-@click.option('--checksum', '-c', is_flag=True, help='Specifies if the checksum should be calculated for each file found in the scan.')
-@click.option('--algo', '-a', type=click.Choice(AVAILABLE_HASH_ALGORITHMS), default=DEFAULT_HASH_ALGORITHM, help='The preferred algorithm to hash the file with.')
-def _verify(scan: str, checksum: bool, algo: str):
+@click.option(
+    '--checksum',
+    '-c',
+    is_flag=True,
+    help='Specifies if the checksum should be calculated for each file found in the scan.'
+)
+def _verify(scan: str, checksum: bool):
     """
     Checks if the results of a previous scan match what is currently on disk.
 
@@ -59,7 +73,7 @@ def _verify(scan: str, checksum: bool, algo: str):
     if not root_path.is_dir():
         raise Exception(f'Could not verify scan because the original scanned directory could not be found at: [{root_path}]')
 
-    disk_tree = read_tree_from_disk(root_path, checksum, algo)
+    disk_tree = read_tree_from_disk(root_path, checksum, scan_tree.checksum_algo)
     diff_result = diff_between_trees(scan_tree, disk_tree)
 
     print('\n----- Similar -----')

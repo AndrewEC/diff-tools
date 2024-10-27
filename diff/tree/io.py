@@ -2,6 +2,8 @@ from typing import List
 from pathlib import Path
 import hashlib
 
+from diff.errors import UnsupportedAlgorithmException, InvalidScanFileException
+
 from .node import Node
 from .yml import read_yaml_file
 
@@ -11,6 +13,14 @@ AVAILABLE_HASH_ALGORITHMS = [
     'sha1',
     DEFAULT_HASH_ALGORITHM,
     'sha512'
+]
+
+SKIPPABLE_FILES = [
+]
+
+SKIPPABLE_FOLDERS = [
+    'System Volume Information',
+    '$RECYCLE.BIN'
 ]
 
 def read_tree_from_yaml(file_path: Path) -> Node:
@@ -25,7 +35,7 @@ def read_tree_from_yaml(file_path: Path) -> Node:
     try:
         return Node.from_dict(None,  read_yaml_file(file_path))
     except Exception as e:
-        raise Exception(f'Could not parse previous scan yml file. Cause: [{e}]', e)
+        raise InvalidScanFileException(file_path, e) from e
 
 
 def compute_file_checksum(path: Path, algo: str) -> str:
@@ -39,8 +49,7 @@ def compute_file_checksum(path: Path, algo: str) -> str:
     """
     print(f'Computing checksum of file: [{path}]')
     if not hasattr(hashlib, algo):
-        raise Exception('The specified checksum algorithm, [{}], does not appear to be available on this system. '
-                        'Choose another hash algorithm and try again.')
+        raise UnsupportedAlgorithmException(algo)
     file_hash = getattr(hashlib, algo)()
     with open(path, 'rb') as file:
         while chunk := file.read(file_hash.block_size):
@@ -48,18 +57,33 @@ def compute_file_checksum(path: Path, algo: str) -> str:
     return file_hash.hexdigest()
 
 
+def _should_skip_file(path: Path) -> bool:
+    return (
+            (path.is_dir() and path.name in SKIPPABLE_FOLDERS)
+            or (path.is_file() and path.name in SKIPPABLE_FILES)
+    )
+
+
+def _get_non_skippable_files(path: Path) -> List[Path]:
+    all_files = path.iterdir()
+    non_skippable_files = []
+    for file in all_files:
+        if _should_skip_file(file):
+            print(f'Skipping file since it has an excluded name: [{file.name}]')
+        else:
+            non_skippable_files.append(file)
+    return non_skippable_files
+
+
 def _get_child_paths(path: Path) -> List[Path]:
-    if not path.is_dir():
-        print(f'Could not get child paths of path because path is not a directory: [{path}]')
-        return []
     try:
-        return list(path.iterdir())
+        return _get_non_skippable_files(path)
     except Exception as e:
         print(f'A directory could not be scanned. The following directory will be skipped: [{path}]. Reason: [{e}]')
         return []
 
 
-def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str) -> Node:
+def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str = None) -> Node:
     """
     Initializes a full Node tree from the contents of a path on disk.
 
@@ -84,9 +108,10 @@ def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str) -> Node:
             checksum = None
             if compute_checksums and child_path.is_file():
                 checksum = compute_file_checksum(child_path, algo)
-            child_node = Node.from_disk(current_node, child_path, checksum)
+            child_node = Node.from_disk(current_node, child_path, checksum, None)
             attach_children(child_path, child_node)
+
     print(f'Scanning contents of: [{path}]')
-    root_node = Node.from_disk(None, path, None, str(path))
+    root_node = Node.from_disk(None, path, None, algo, str(path))
     attach_children(path, root_node)
     return root_node
