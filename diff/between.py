@@ -49,6 +49,7 @@ def between(first: str, second: str, checksum: bool, algo: str):
         second_execution = executor.submit(read_tree_from_disk, second_path, checksum, algo)
         first_tree = first_execution.result()
         second_tree = second_execution.result()
+
     diff_result = diff_between_trees(first_tree, second_tree)
 
     print('\n----- Similar -----')

@@ -36,7 +36,7 @@ def _flatten(root_node: Node) -> Dict[str, Node]:
 
 
 def _are_nodes_different(first: Node, second: Node) -> bool:
-    if first.checksum != '' and second.checksum != '' and first.checksum != second.checksum:
+    if first.checksum is not None and second.checksum is not None and first.checksum != second.checksum:
         return True
     if first.size != second.size:
         return True
