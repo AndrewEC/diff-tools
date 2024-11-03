@@ -75,14 +75,6 @@ def _get_non_skippable_files(path: Path) -> List[Path]:
     return non_skippable_files
 
 
-def _get_child_paths(path: Path) -> List[Path]:
-    try:
-        return _get_non_skippable_files(path)
-    except Exception as e:
-        print(f'A directory could not be scanned. The following directory will be skipped: [{path}]. Reason: [{e}]')
-        return []
-
-
 def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str = None) -> Node:
     """
     Initializes a full Node tree from the contents of a path on disk.
@@ -101,7 +93,7 @@ def read_tree_from_disk(path: Path, compute_checksums: bool, algo: str = None) -
     def attach_children(current_path: Path, current_node: Node):
         if not current_path.is_dir():
             return
-        child_paths = _get_child_paths(current_path)
+        child_paths = _get_non_skippable_files(current_path)
         if len(child_paths) == 0:
             return
         for child_path in child_paths:

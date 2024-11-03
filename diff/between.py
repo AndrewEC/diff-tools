@@ -3,9 +3,28 @@ from concurrent.futures import ThreadPoolExecutor
 
 import click
 
-from diff.tree import (read_tree_from_disk, diff_between_trees,
-                       DEFAULT_HASH_ALGORITHM, AVAILABLE_HASH_ALGORITHMS)
+import diff.tree as trees
 from diff.errors import NotADirectoryException
+
+
+class Decorator(trees.DiffMessageDecorator):
+
+    def __init__(self, first_tree: trees.Node, second_tree: trees.Node):
+        self._first = first_tree
+        self._second = second_tree
+
+    def first_tree_has_diff_message(self) -> str:
+        return (f'The following files were found in [{self._second.path_to_node()}] '
+                f'but not in [{self._first.path_to_node()}]:')
+
+    def first_tree_no_diff_message(self) -> str:
+        return f'All files found in [{self._second.path_to_node()}] were also found in [{self._first.path_to_node()}].'
+
+    def second_tree_has_diff_message(self) -> str:
+        return f'The following files were found in [{self._first.path_to_node()}] but not in [{self._second.path_to_node()}]:'
+
+    def second_tree_no_diff_message(self) -> str:
+        return f'All files found in [{self._first.path_to_node()}] were also found in [{self._second.path_to_node()}].'
 
 
 @click.command()
@@ -20,8 +39,8 @@ from diff.errors import NotADirectoryException
 @click.option(
     '--algo',
     '-a',
-    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
-    default=DEFAULT_HASH_ALGORITHM,
+    type=click.Choice(trees.AVAILABLE_HASH_ALGORITHMS),
+    default=trees.DEFAULT_HASH_ALGORITHM,
     help='The preferred algorithm to hash the file with.'
 )
 def between(first: str, second: str, checksum: bool, algo: str):
@@ -45,38 +64,10 @@ def between(first: str, second: str, checksum: bool, algo: str):
         raise ValueError('The first path to scan and the second path to scan cannot refer to the same location.')
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        first_execution = executor.submit(read_tree_from_disk, first_path, checksum, algo)
-        second_execution = executor.submit(read_tree_from_disk, second_path, checksum, algo)
+        first_execution = executor.submit(trees.read_tree_from_disk, first_path, checksum, algo)
+        second_execution = executor.submit(trees.read_tree_from_disk, second_path, checksum, algo)
         first_tree = first_execution.result()
         second_tree = second_execution.result()
 
-    diff_result = diff_between_trees(first_tree, second_tree)
-
-    print('\n----- Similar -----')
-    if len(diff_result.similar) > 0:
-        print('The following files have the same path but different checksums or file sizes.')
-        for similar in diff_result.similar:
-            print(f'\t[{similar[0].path_to_node()}] -> [{similar[1].path_to_node()}]')
-    else:
-        print('No files with similar paths but different checksums or file sizes were found.')
-
-    print('')
-
-    print('----- Different -----')
-    if len(diff_result.first_tree.missing) > 0:
-        print(f'The following files were found in [{second_tree.path_to_node()}] but not in [{first_tree.path_to_node()}]:')
-        for missing in diff_result.first_tree.missing:
-            print(f'\t[{missing.path_to_node()}]')
-    else:
-        print(f'All files found in [{second_tree.path_to_node()}] were also found in [{first_tree.path_to_node()}].')
-
-    print('')
-
-    if len(diff_result.second_tree.missing) > 0:
-        print(f'The following files were found in [{first_tree.path_to_node()}] but not in [{second_tree.path_to_node()}]:')
-        for missing in diff_result.second_tree.missing:
-            print(f'\t[{missing.path_to_node()}]')
-    else:
-        print(f'All files found in [{first_tree.path_to_node()}] were also found in [{second_tree.path_to_node()}].')
-
-    print('')
+    diff_result = trees.diff_between_trees(first_tree, second_tree)
+    trees.print_similarity_results(diff_result, Decorator(first_tree, second_tree))

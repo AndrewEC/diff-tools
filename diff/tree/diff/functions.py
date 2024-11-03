@@ -1,21 +1,9 @@
 from typing import List, Dict, Generator, Tuple
 
-from .node import Node
+from diff.util import has_elements
 
-
-class MissingResult:
-
-    def __init__(self, tree_node: Node, missing: List[Node]):
-        self.tree_node = tree_node
-        self.missing = missing
-
-
-class DiffResult:
-
-    def __init__(self, similar: List[Tuple[Node, Node]], first_tree: MissingResult, second_tree: MissingResult):
-        self.similar = similar
-        self.first_tree = first_tree
-        self.second_tree = second_tree
+from .models import DiffResult, MissingResult
+from ..node import Node
 
 
 def _path_to_node_without_root(root_node: Node, node: Node) -> str:
@@ -24,10 +12,10 @@ def _path_to_node_without_root(root_node: Node, node: Node) -> str:
 
 
 def _flatten(root_node: Node) -> Dict[str, Node]:
-    def flatten(node: Node) -> Generator[Tuple, None, None]:
+    def flatten(node: Node) -> Generator[Tuple[str, Node], None, None]:
         for child in node.children:
             yield _path_to_node_without_root(root_node, child), child
-            if child.children is not None and len(child.children) > 0:
+            if has_elements(child.children):
                 yield from flatten(child)
 
     if len(root_node.children) == 0:

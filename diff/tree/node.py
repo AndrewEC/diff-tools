@@ -4,9 +4,9 @@ from pathlib import Path
 import os
 
 from diff.errors import InvalidNodePropertiesException
+from diff.util import has_elements
 
 
-_MESSAGE_TEMPLATE = 'Could not read Node. Found an unrecognized property of "{}".'
 _VALID_NODE_KEYS = ['name', 'size', 'checksum', 'checksum_algo', 'children']
 
 
@@ -81,7 +81,7 @@ class Node:
         if self.size is not None:
             node_dict['size'] = self.size
 
-        if self.children is not None and len(self.children) > 0:
+        if has_elements(self.children):
             node_dict['children'] = [child.to_dict() for child in self.children]
 
         if self.checksum is not None:
@@ -115,7 +115,8 @@ class Node:
         :return:
         """
         if path.is_dir() and checksum is not None:
-            raise ValueError('Could not initialize Node from disk. The checksum value must be None or empty if the path points to a directory.')
+            raise ValueError('Could not initialize Node from disk. The checksum value must be None or empty if '
+                             'the path points to a directory.')
         size = os.stat(path).st_size if path.is_file() else None
         name = path.name if alternate_name is None else alternate_name
         node = Node(parent, name, size, checksum, checksum_algo)
@@ -138,7 +139,7 @@ class Node:
         if parent is not None:
             parent.attach_child(node)
         children = values.get('children')
-        if children is not None and len(children) > 0:
+        if has_elements(children):
             for child in children:
                 Node.from_dict(node, child)
         return node
