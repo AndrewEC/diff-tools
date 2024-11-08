@@ -23,6 +23,7 @@ SKIPPABLE_FOLDERS = [
     '$RECYCLE.BIN'
 ]
 
+
 def read_tree_from_yaml(file_path: Path) -> Node:
     """
     Parses a yaml file to a dict and reads the dict into a Node instance that represents the root of the

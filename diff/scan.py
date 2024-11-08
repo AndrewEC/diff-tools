@@ -97,5 +97,6 @@ def _verify(scan: str, checksum: bool):
 def scan():
     pass
 
+
 scan.add_command(_verify)
 scan.add_command(_folder)

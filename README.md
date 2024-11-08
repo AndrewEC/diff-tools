@@ -1,7 +1,14 @@
 # diff-tools
 Command line tools for detecting changes in the directory structure of a given folder.
 
-**Important**: It is recommended to run the `CreateVenv.ps1` script before executing any of the below commands.
+## Cloning
+To clone the project and the required submodules run:
+
+    git clone --recurse-submodules https://github.com/AndrewEC/diff-tools.git
+
+Once the project has been cloned run the `CreateVenv.ps1` script before executing any of the below commands.
+
+## Commands
 
 ### scan folder
 A command that will scan a directory, and all its nested contents, and write that structure to a YAML file.
@@ -14,7 +21,8 @@ Usage:
 
 ### scan verify
 A command that will scan a directory, and all its nested contents, and compare the results of that scan to a previous
-scan YML file.
+scan YML file. Much like the `diff between` command this will list the differences between the previous scan results
+and the files that are currently on disk.
 
 The first argument specifies the directory to scan, the second argument specifies the path the existing YAML file
 where the scan results from the last scan were stored.
@@ -43,3 +51,7 @@ computed checksum to a previously computed checksum.
 
 Usage:
 > python -m diff checksum verify "<path_to_file_to_compute_checksum_of>" <previous_checksum>
+
+## Flake8 and Dependency Auditing
+The `build.py` script run on the py-build-utils submodule and will run the Flake8 and pip-audit
+modules against this project. Simply run the `CreateVenv.ps1` script first then run the build.py script.
