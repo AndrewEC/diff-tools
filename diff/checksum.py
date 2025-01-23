@@ -29,7 +29,7 @@ def _calculate(path: str, algo: str):
     path: The path to the file to compute the hash of. This must be an existing file and not a directory.
     """
     file_hash = _compute_file_hash(path, algo)
-    print(f'The file hash is: {file_hash}')
+    print(f'The {algo} file hash is: {file_hash}')
 
 
 @click.command('verify')
