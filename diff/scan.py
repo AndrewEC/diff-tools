@@ -53,7 +53,6 @@ def _folder(path: str, output: str, checksum: bool, algo: str):
     if output_path.is_file():
         raise ValueError(f'The output path already exists. Delete the following file and try again: [{output_path}]')
 
-    print(f'Scanning path: [{path_to_scan}]')
     root_node = trees.read_tree_from_disk(path_to_scan, checksum, algo)
 
     trees.to_yaml_file(output_path, root_node)

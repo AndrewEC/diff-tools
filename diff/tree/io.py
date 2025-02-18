@@ -1,8 +1,8 @@
 from typing import List
 from pathlib import Path
-import hashlib
 
-from diff.errors import UnsupportedAlgorithmException, InvalidScanFileException
+from diff.errors import InvalidScanFileException
+from diff.util import compute_file_checksum
 
 from .node import Node
 from .yml import read_yaml_file
@@ -37,25 +37,6 @@ def read_tree_from_yaml(file_path: Path) -> Node:
         return Node.from_dict(None,  read_yaml_file(file_path))
     except Exception as e:
         raise InvalidScanFileException(file_path, e) from e
-
-
-def compute_file_checksum(path: Path, algo: str) -> str:
-    """
-    Computes the hash of a file at the given path using the specified hash algorithm.
-
-    :param path: The absolute path to the file on disk whose hash is to be computed.
-    :param algo: The algorithm to use to compute the hash of the file.
-    :return: The computed hash of the file.
-    :raises Exception: An exception will be raised if the specified hashing algorithm does not exist.
-    """
-    print(f'Computing checksum of file: [{path}]')
-    if not hasattr(hashlib, algo):
-        raise UnsupportedAlgorithmException(algo)
-    file_hash = getattr(hashlib, algo)()
-    with open(path, 'rb') as file:
-        while chunk := file.read(file_hash.block_size):
-            file_hash.update(chunk)
-    return file_hash.hexdigest()
 
 
 def _should_skip_file(path: Path) -> bool:

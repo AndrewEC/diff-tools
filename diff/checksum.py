@@ -2,8 +2,9 @@ from pathlib import Path
 
 import click
 
-from diff.tree import compute_file_checksum, AVAILABLE_HASH_ALGORITHMS, DEFAULT_HASH_ALGORITHM
+from diff.tree import AVAILABLE_HASH_ALGORITHMS, DEFAULT_HASH_ALGORITHM
 from diff.errors import NotAFileException
+from diff.util import compute_file_checksum
 
 
 def _compute_file_hash(path: str, algo: str) -> str:

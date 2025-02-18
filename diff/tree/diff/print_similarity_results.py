@@ -1,25 +1,5 @@
-from abc import ABC, abstractmethod
-
 from .models import DiffResult
-
-
-class DiffMessageDecorator(ABC):
-
-    @abstractmethod
-    def first_tree_has_diff_message(self) -> str:
-        pass
-
-    @abstractmethod
-    def first_tree_no_diff_message(self) -> str:
-        pass
-
-    @abstractmethod
-    def second_tree_has_diff_message(self) -> str:
-        pass
-
-    @abstractmethod
-    def second_tree_no_diff_message(self) -> str:
-        pass
+from .diff_message_decorator import DiffMessageDecorator
 
 
 def print_similarity_results(diff_result: DiffResult, message_decorator: DiffMessageDecorator):
