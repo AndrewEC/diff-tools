@@ -1,6 +1,6 @@
 param(
-    [Parameter(Mandatory)]
     [ValidateSet(
+        "Activate",
         "All",
         "Audit",
         "Flake",
@@ -13,6 +13,8 @@ param(
 . ./build-scripts/Audit.ps1
 . ./build-scripts/Flake.ps1
 . ./build-scripts/Install.ps1
+
+Invoke-ActivateScript
 
 switch ($ScriptAction) {
     "All" {
