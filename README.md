@@ -6,7 +6,7 @@ To clone the project and the required submodules run:
 
     git clone --recurse-submodules https://github.com/AndrewEC/diff-tools.git
 
-Once the project has been cloned run the `CreateVenv.ps1` script before executing any of the below commands.
+Once the project has been cloned run the `RunScript.ps1 Install` script before executing any of the below commands.
 
 ## Commands
 
@@ -53,5 +53,5 @@ Usage:
 > python -m diff checksum verify "<path_to_file_to_compute_checksum_of>" <previous_checksum>
 
 ## Flake8 and Dependency Auditing
-The `build.py` script run on the py-build-utils submodule and will run the Flake8 and pip-audit
-modules against this project. Simply run the `CreateVenv.ps1` script first then run the build.py script.
+Executing the `RunScript.ps1` will perform all the required tasks such as activating the proper
+virtual environment, installing depdnencies, running Flake8 and pip-audit.
