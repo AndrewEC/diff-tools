@@ -3,11 +3,11 @@ from typing import List, Dict
 from pathlib import Path
 import os
 
-from diff.errors import InvalidNodePropertiesException
-from diff.util import has_elements
+from diff.core.errors import InvalidNodePropertiesException
+from diff.core.util import has_elements
 
 
-_VALID_NODE_KEYS = ['name', 'size', 'checksum', 'checksum_algo', 'children']
+_VALID_NODE_KEYS = ['name', 'size', 'checksum', 'checksum_algo', 'children', 'alternate_name']
 
 
 def _validate_properties(value: Dict):
@@ -19,6 +19,12 @@ def _validate_properties(value: Dict):
 def _get_size(value: Dict) -> int | None:
     size = value.get('size')
     return int(size) if size is not None else None
+
+
+def _get_name(values: Dict) -> str:
+    if 'alternate_name' in values:
+        return values['alternate_name']
+    return values['name']
 
 
 class Node:
@@ -93,38 +99,6 @@ class Node:
         return node_dict
 
     @staticmethod
-    def from_disk(
-            parent: Node | None,
-            path: Path,
-            checksum: str | None,
-            checksum_algo: str | None,
-            alternate_name: str | None = None
-    ) -> Node:
-        """
-        Initializes a Node instance from a Path that currently exists on disk.
-
-        :param parent: The parent Node the newly created Node will be a child of. If this value is not None then
-            the attach_child function of the parent Node will be invoked.
-        :param path: The existing, on disk, path that the newly created Node will represent.
-        :param checksum: An optional checksum of the file on disk. This value must be None if the path parameter
-            points to a directory.
-        :param checksum_algo: The algorithm used to calculate the checksum of the file. This value must be provided if
-            the checksum value is also provided
-        :param alternate_name: By default, the name of the new node is equal to path.name. If this value is not None
-            it will override said default value.
-        :return:
-        """
-        if path.is_dir() and checksum is not None:
-            raise ValueError('Could not initialize Node from disk. The checksum value must be None or empty if '
-                             'the path points to a directory.')
-        size = os.stat(path).st_size if path.is_file() else None
-        name = path.name if alternate_name is None else alternate_name
-        node = Node(parent, name, size, checksum, checksum_algo)
-        if parent is not None:
-            parent.attach_child(node)
-        return node
-
-    @staticmethod
     def from_dict(parent: Node | None, values: Dict) -> Node:
         """
         Initializes a Node instance from the values in a dictionary.
@@ -135,7 +109,15 @@ class Node:
         :return: A newly initialized Node with the constructor values pulled from the values dict.
         """
         _validate_properties(values)
-        node = Node(parent, values['name'], _get_size(values), values.get('checksum'), values.get('checksum_algo'))
+
+        node = Node(
+            parent,
+            _get_name(values),
+            _get_size(values),
+            values.get('checksum'),
+            values.get('checksum_algo')
+        )
+
         if parent is not None:
             parent.attach_child(node)
         children = values.get('children')

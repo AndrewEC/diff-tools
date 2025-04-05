@@ -15,7 +15,7 @@ class NotADirectoryException(MissingPathException):
         super().__init__('directory', path_name, path)
 
 
-class NotAFileException(Exception):
+class NotAFileException(MissingPathException):
 
     def __init__(self, path_name: str, path: Path):
         super().__init__('file', path_name, path)

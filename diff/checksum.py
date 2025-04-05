@@ -1,17 +1,7 @@
-from pathlib import Path
-
 import click
 
-from diff.tree import AVAILABLE_HASH_ALGORITHMS, DEFAULT_HASH_ALGORITHM
-from diff.errors import NotAFileException
-from diff.util import compute_file_checksum
-
-
-def _compute_file_hash(path: str, algo: str) -> str:
-    path_to_compute = Path(path)
-    if not path_to_compute.is_file():
-        raise NotAFileException('file', path_to_compute)
-    return compute_file_checksum(path_to_compute, algo)
+from diff.core.tree import AVAILABLE_HASH_ALGORITHMS, DEFAULT_HASH_ALGORITHM
+from diff.core.cli import CliChecksum
 
 
 @click.command('calculate')
@@ -29,8 +19,7 @@ def _calculate(path: str, algo: str):
 
     path: The path to the file to compute the hash of. This must be an existing file and not a directory.
     """
-    file_hash = _compute_file_hash(path, algo)
-    print(f'The {algo} file hash is: {file_hash}')
+    return CliChecksum().calculate(path, algo)
 
 
 @click.command('verify')
@@ -51,14 +40,7 @@ def _verify(path: str, hash: str, algo: str):
 
     hash: The hash previously computed to compare against.
     """
-    file_hash = _compute_file_hash(path, algo)
-    if file_hash != hash:
-        print('The calculated file has and the existing hash do not match.')
-        print('Hashes are:')
-        print(f'\tExisting: {hash}')
-        print(f'\tComputed: {file_hash}')
-    else:
-        print('The calculated file hash and the existing provided hash match.')
+    return CliChecksum().verify(path, hash, algo)
 
 
 @click.group()

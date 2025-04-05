@@ -2,3 +2,4 @@
 __pycache__/
 diff-tools-venv
 test-files/
+.coverage
