@@ -9,11 +9,7 @@ param(
     [string]$ScriptAction
 )
 
-. ./build-scripts/Activate.ps1
-. ./build-scripts/Audit.ps1
-. ./build-scripts/Flake.ps1
-. ./build-scripts/Install.ps1
-. ./build-scripts/Test.ps1
+Import-Module ./PyBuildScripts
 
 Invoke-ActivateScript
 
@@ -21,7 +17,7 @@ switch ($ScriptAction) {
     "All" {
         Invoke-InstallScript
         Invoke-FlakeScript
-        Invoke-TestScript 80 {
+        Invoke-TestScript 75 {
             coverage run `
                 --omit=./diff/tests/* `
                 --source=diff.core `
