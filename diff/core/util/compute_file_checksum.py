@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Final
 import hashlib
 from pathlib import Path
 
@@ -27,10 +27,13 @@ class Checksum:
     def _get_hash_function(self, algo: str) -> Any:
         if not hasattr(hashlib, algo):
             return None
+
         hash_function = getattr(hashlib, algo)
+
         if not callable(hash_function):
             raise UnsupportedAlgorithmException(algo)
+
         return hash_function()
 
 
-CHECKSUM_SINGLETON = Checksum()
+CHECKSUM_SINGLETON: Final[Checksum] = Checksum()

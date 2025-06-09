@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any, Final
 import os
 from pathlib import Path
 
@@ -9,17 +9,17 @@ from .node import Node
 from .yml import YamlSerialization, YAML_SERIALIZATION_SINGLETON
 
 
-DEFAULT_HASH_ALGORITHM = 'sha256'
+DEFAULT_HASH_ALGORITHM: Final[str] = 'sha256'
 
-AVAILABLE_HASH_ALGORITHMS = [
+AVAILABLE_HASH_ALGORITHMS: Final[List[str]] = [
     DEFAULT_HASH_ALGORITHM,
     'sha512'
 ]
 
-_SKIPPABLE_FILES = [
+_SKIPPABLE_FILES: Final[List[str]] = [
 ]
 
-_SKIPPABLE_FOLDERS = [
+_SKIPPABLE_FOLDERS: Final[List[str]] = [
     'System Volume Information',
     '$RECYCLE.BIN'
 ]
@@ -47,7 +47,7 @@ class TreeLoader:
         except Exception as e:
             raise InvalidScanFileException(file_path, e) from e
 
-    def read_tree_from_disk(self, path: Path, compute_checksums: bool, checksum_algo: str = None) -> Node:
+    def read_tree_from_disk(self, path: Path, compute_checksums: bool, checksum_algo: str | None) -> Node:
         """
         Initializes a full Node tree from the contents of a path on disk.
 
@@ -69,10 +69,7 @@ class TreeLoader:
             if len(child_paths) == 0:
                 return
             for child_path in child_paths:
-                checksum = None
-                if compute_checksums and child_path.is_file():
-                    checksum = self._checksum.compute_file_checksum(child_path, checksum_algo)
-                child_node = self._read_node_details(child_path, current_node, checksum, checksum_algo, None)
+                child_node = self._read_node_details(child_path, current_node, compute_checksums, checksum_algo, None)
                 attach_children(child_path, child_node)
 
         print(f'Scanning contents of: [{path}]')
@@ -87,7 +84,7 @@ class TreeLoader:
                            checksum_algo: str | None,
                            alternate_name: str | None) -> Node:
 
-        values = {
+        values: Dict[str, Any] = {
             'name': path.name,
             'size': os.stat(path).st_size if path.is_file() else None,
         }
@@ -95,7 +92,7 @@ class TreeLoader:
         if alternate_name is not None:
             values['alternate_name'] = alternate_name
 
-        if compute_checksum and path.is_file():
+        if compute_checksum and checksum_algo is not None and path.is_file():
             values['checksum'] = self._checksum.compute_file_checksum(path, checksum_algo)
 
         if parent is None:
@@ -111,7 +108,7 @@ class TreeLoader:
 
     def _get_non_skippable_files(self, path: Path) -> List[Path]:
         all_files = path.iterdir()
-        non_skippable_files = []
+        non_skippable_files: List[Path] = []
         for file in all_files:
             if self._should_skip_file(file):
                 print(f'Skipping file since it has an excluded name: [{file.name}]')
@@ -120,4 +117,4 @@ class TreeLoader:
         return non_skippable_files
 
 
-TREE_LOADER_SINGLETON = TreeLoader()
+TREE_LOADER_SINGLETON: Final[TreeLoader] = TreeLoader()

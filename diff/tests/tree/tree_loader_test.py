@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from pathlib import Path
 
 import unittest
@@ -5,7 +6,7 @@ from unittest.mock import patch, Mock
 
 from diff.core.errors import InvalidScanFileException
 from diff.core.tree import TreeLoader, YamlSerialization
-from diff.core.util import Checksum
+from diff.core.util import Checksum, either
 
 from diff.tests.util import fully_qualified_name
 
@@ -14,7 +15,7 @@ class TreeLoaderTests(unittest.TestCase):
 
     @patch(fully_qualified_name(YamlSerialization))
     def test_read_tree_from_yaml(self, mock_yaml: YamlSerialization):
-        values = {
+        values: Dict[str, Any] = {
             'name': 'test_name',
             'checksum': 'test_checksum',
             'checksum_algo': 'test_checksum_algo',
@@ -63,7 +64,7 @@ class TreeLoaderTests(unittest.TestCase):
         self.assertEqual(checksum_algo, actual.checksum_algo)
         self.assertIsNone(actual.checksum)
 
-        child_nodes = actual.children
+        child_nodes = either(actual.children, [])
         self.assertIsNotNone(child_nodes)
         self.assertEqual(1, len(child_nodes))
 

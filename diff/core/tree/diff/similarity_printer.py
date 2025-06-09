@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Final
 
 from .models import DiffResult
 from .diff_message_decorator import DiffMessageDecorator
@@ -40,4 +40,4 @@ class SimilarityPrinter:
         self._print_function('')
 
 
-SIMILARITY_PRINTER_SINGLETON = SimilarityPrinter()
+SIMILARITY_PRINTER_SINGLETON: Final[SimilarityPrinter] = SimilarityPrinter()

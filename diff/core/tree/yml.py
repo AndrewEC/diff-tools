@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any, Final
 from pathlib import Path
 import yaml
 
@@ -26,7 +26,7 @@ class YamlSerialization:
         with open(file_path, 'w') as file:
             file.write(self.to_yaml_string(root_node))
 
-    def read_yaml_file(self, file_path: Path) -> Dict:
+    def read_yaml_file(self, file_path: Path) -> Dict[str, Any]:
         """
         Reads the contents of a yaml file to a dictionary.
 
@@ -37,4 +37,4 @@ class YamlSerialization:
             return yaml.safe_load(file.read())
 
 
-YAML_SERIALIZATION_SINGLETON = YamlSerialization()
+YAML_SERIALIZATION_SINGLETON: Final[YamlSerialization] = YamlSerialization()

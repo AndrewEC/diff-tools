@@ -68,7 +68,7 @@ class CliScanTests(unittest.TestCase):
         mock_similarity_printer.print_similarity_results = Mock()
 
         (CliScan(mock_tree_loader, mock_tree_diff, mock_yaml_serialization, mock_similarity_printer, mock_print_function)
-         .verify(scan_file_path, True))
+         .verify(str(scan_file_path), True))
 
         mock_tree_loader.read_tree_from_yaml.assert_called_once_with(scan_file_path)
         mock_tree_loader.read_tree_from_disk.assert_called_once_with(original_scan_folder, True, checksum_algo)

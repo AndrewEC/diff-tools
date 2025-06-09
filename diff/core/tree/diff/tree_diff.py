@@ -1,9 +1,10 @@
-from typing import List, Dict, Generator, Tuple
+from typing import List, Dict, Generator, Tuple, Final
 
 from diff.core.util import has_elements
 
 from .models import DiffResult, MissingResult
 from ..node import Node
+from diff.core.util import either
 
 
 class TreeDiff:
@@ -37,12 +38,12 @@ class TreeDiff:
 
     def _flatten(self, root_node: Node) -> Dict[str, Node]:
         def flatten(node: Node) -> Generator[Tuple[str, Node], None, None]:
-            for child in node.children:
+            for child in either(node.children, []):
                 yield self._path_to_node_without_root(root_node, child), child
                 if has_elements(child.children):
                     yield from flatten(child)
 
-        if len(root_node.children) == 0:
+        if len(either(root_node.children, [])) == 0:
             return {}
         return {value[0]: value[1] for value in flatten(root_node)}
 
@@ -51,6 +52,7 @@ class TreeDiff:
             return True
         if first.size != second.size:
             return True
+        return False
 
     def _find_similar_nodes(self, first_tree_nodes: Dict[str, Node], second_tree_nodes: Dict[str, Node]) -> List[Tuple[Node, Node]]:
         """
@@ -59,7 +61,7 @@ class TreeDiff:
         or checksum.
         """
 
-        similarities = []
+        similarities: List[Tuple[Node, Node]] = []
         for first_tree_node_path in first_tree_nodes.keys():
             if first_tree_node_path not in second_tree_nodes:
                 continue
@@ -83,4 +85,4 @@ class TreeDiff:
         return [node for node in all_missing_nodes if not self._has_parent_in_missing_list(all_missing_nodes, node)]
 
 
-TREE_DIFF_SINGLETON = TreeDiff()
+TREE_DIFF_SINGLETON: Final[TreeDiff] = TreeDiff()

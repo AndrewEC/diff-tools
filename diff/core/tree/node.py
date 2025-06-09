@@ -1,27 +1,27 @@
 from __future__ import annotations
-from typing import List, Dict
+from typing import List, Dict, Any
 from pathlib import Path
 import os
 
 from diff.core.errors import InvalidNodePropertiesException
-from diff.core.util import has_elements
+from diff.core.util import has_elements, either
 
 
 _VALID_NODE_KEYS = ['name', 'size', 'checksum', 'checksum_algo', 'children', 'alternate_name']
 
 
-def _validate_properties(value: Dict):
+def _validate_properties(value: Dict[str, Any]):
     unrecognized_key = next((key for key in value if key not in _VALID_NODE_KEYS), None)
     if unrecognized_key is not None:
         raise InvalidNodePropertiesException(unrecognized_key)
 
 
-def _get_size(value: Dict) -> int | None:
+def _get_size(value: Dict[str, Any]) -> int | None:
     size = value.get('size')
     return int(size) if size is not None else None
 
 
-def _get_name(values: Dict) -> str:
+def _get_name(values: Dict[str, Any]) -> str:
     if 'alternate_name' in values:
         return values['alternate_name']
     return values['name']
@@ -37,7 +37,7 @@ class Node:
             self,
             parent: Node | None,
             name: str,
-            size: int,
+            size: int | None,
             checksum: str | None,
             checksum_algo: str | None
     ):
@@ -74,13 +74,13 @@ class Node:
             return Path(path_segments[0])
         return Path(os.path.join(*list(reversed(path_segments))))
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Serializes this Node to a dictionary.
 
         :return: A dictionary representation of this Node.
         """
-        node_dict = {
+        node_dict: Dict[str, Any] = {
             'name': self.name
         }
 
@@ -88,7 +88,7 @@ class Node:
             node_dict['size'] = self.size
 
         if has_elements(self.children):
-            node_dict['children'] = [child.to_dict() for child in self.children]
+            node_dict['children'] = [child.to_dict() for child in either(self.children, [])]
 
         if self.checksum is not None:
             node_dict['checksum'] = self.checksum
@@ -99,7 +99,7 @@ class Node:
         return node_dict
 
     @staticmethod
-    def from_dict(parent: Node | None, values: Dict) -> Node:
+    def from_dict(parent: Node | None, values: Dict[str, Any]) -> Node:
         """
         Initializes a Node instance from the values in a dictionary.
 
@@ -122,6 +122,6 @@ class Node:
             parent.attach_child(node)
         children = values.get('children')
         if has_elements(children):
-            for child in children:
+            for child in either(children, []):
                 Node.from_dict(node, child)
         return node
