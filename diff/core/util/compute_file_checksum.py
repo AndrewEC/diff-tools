@@ -26,7 +26,7 @@ class Checksum:
 
     def _get_hash_function(self, algo: str) -> Any:
         if not hasattr(hashlib, algo):
-            return None
+            raise UnsupportedAlgorithmException(algo)
 
         hash_function = getattr(hashlib, algo)
 
