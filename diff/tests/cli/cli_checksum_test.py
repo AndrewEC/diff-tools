@@ -45,7 +45,7 @@ class CliChecksumTests(unittest.TestCase):
 
     @patch(fully_qualified_name(Checksum))
     def test_verify_with_matching_hashes(self, mock_checksum: Checksum):
-        expected_checksum = 'expected_checksum_value'
+        expected_checksum = 'EXPECTED_CHECKSUM_VALUE'
         checksum_algo = 'sha256'
 
         mock_checksum.compute_file_checksum = Mock(return_value=expected_checksum)
@@ -60,7 +60,7 @@ class CliChecksumTests(unittest.TestCase):
 
     @patch(fully_qualified_name(Checksum))
     def test_verify_with_different_hashes(self, mock_checksum: Checksum):
-        existing_hash = 'different_checksum_value'
+        existing_hash = 'DIFFERENT_CHECKSUM_VALUE'
         expected_checksum = 'expected_checksum_value'
         checksum_algo = 'sha256'
 

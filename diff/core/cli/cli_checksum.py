@@ -18,6 +18,7 @@ class CliChecksum:
         self._print_function(f'The {algo} file hash is: {file_hash}')
 
     def verify(self, path: str, hash: str, algo: str):
+        hash = hash.upper()
         file_hash = self._compute_file_hash(path, algo)
         if file_hash != hash:
             self._print_function('The calculated file has and the existing hash do not match.')

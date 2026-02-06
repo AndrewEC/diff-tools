@@ -9,8 +9,8 @@ class ComputeFileChecksumTests(unittest.TestCase):
 
     def test_compute_file_checksum(self):
         test_cases = [
-            ('sha256', 'b2e0377b4bc6afdfbdee3f8d700436721803827d82354cecebd2226bfe6a7c69'),
-            ('sha512', '50d27c29adeee3742fe258d1bc41ae60176491c7ee929ac0acb56afce3d7d6e0aeaac53633c54b701b0ac67c3fb1f32bfdb22efe03a3674662b529ad52347e39')
+            ('sha256', 'B2E0377B4BC6AFDFBDEE3F8D700436721803827D82354CECEBD2226BFE6A7C69'),
+            ('sha512', '50D27C29ADEEE3742FE258D1BC41AE60176491C7EE929AC0ACB56AFCE3D7D6E0AEAAC53633C54B701B0AC67C3FB1F32BFDB22EFE03A3674662B529AD52347E39')
         ]
 
         input_file_path = Path(__file__).absolute().parent.joinpath('checksum_test_file.txt')

@@ -22,7 +22,7 @@ class Checksum:
         with open(path, 'rb') as file:
             while chunk := file.read(file_hash.block_size):
                 file_hash.update(chunk)
-        return file_hash.hexdigest()
+        return file_hash.hexdigest().upper()
 
     def _get_hash_function(self, algo: str) -> Any:
         if not hasattr(hashlib, algo):

@@ -12,6 +12,7 @@ from .yml import YamlSerialization, YAML_SERIALIZATION_SINGLETON
 DEFAULT_HASH_ALGORITHM: Final[str] = 'sha256'
 
 AVAILABLE_HASH_ALGORITHMS: Final[List[str]] = [
+    'md5',
     DEFAULT_HASH_ALGORITHM,
     'sha512'
 ]
