@@ -1,4 +1,4 @@
-from .files import MissingPathException, NotADirectoryException, NotAFileException
-from .unsupported_algorithm import UnsupportedAlgorithmException
-from .invalid_scan_file import InvalidScanFileException
-from .invalid_node_properties import InvalidNodePropertiesException
+from .files import MissingPathException as MissingPathException, NotADirectoryException as NotADirectoryException, NotAFileException as NotAFileException
+from .unsupported_algorithm import UnsupportedAlgorithmException as UnsupportedAlgorithmException
+from .invalid_scan_file import InvalidScanFileException as InvalidScanFileException
+from .invalid_node_properties import InvalidNodePropertiesException as InvalidNodePropertiesException
