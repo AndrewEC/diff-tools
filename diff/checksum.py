@@ -43,6 +43,27 @@ def _verify(path: str, hash: str, algo: str):
     return CliChecksum().verify(path, hash, algo)
 
 
+@click.command('compare')
+@click.argument('first')
+@click.argument('second')
+@click.option(
+    '--algo',
+    '-a',
+    type=click.Choice(AVAILABLE_HASH_ALGORITHMS),
+    default=DEFAULT_HASH_ALGORITHM,
+    help='The preferred algorithm to hash the file with.'
+)
+def _compare(first: str, second: str, algo: str):
+    """
+    Computes the hash of the first and second file and compares them.
+
+    first: The path to the first file to compute the checksum of.
+
+    second: The path to the second file to compute the checksum of.
+    """
+    CliChecksum().compare(first, second, algo)
+
+
 @click.group()
 def checksum():
     pass
@@ -50,3 +71,4 @@ def checksum():
 
 checksum.add_command(_calculate)
 checksum.add_command(_verify)
+checksum.add_command(_compare)

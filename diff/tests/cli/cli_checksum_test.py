@@ -78,3 +78,68 @@ class CliChecksumTests(unittest.TestCase):
             call(f'\tExisting: {existing_hash}'),
             call(f'\tComputed: {expected_checksum}')
         ])
+    
+    @patch(fully_qualified_name(Checksum))
+    def test_compare_with_same_hashes(self, mock_checksum: Checksum):
+        first_path = Path(__file__)
+        second_path = Path(__file__).absolute().parent.joinpath('cli_between_test.py')
+        checksum_algo = 'sha256'
+        expected_hash = 'sha256_hash'
+
+        mock_checksum.compute_file_checksum = Mock(return_value=expected_hash)
+        mock_print_function = Mock()
+
+        CliChecksum(mock_checksum, mock_print_function).compare(str(first_path), str(second_path), checksum_algo)
+
+        mock_checksum.compute_file_checksum.assert_has_calls([
+            call(first_path, checksum_algo),
+            call(second_path, checksum_algo)
+        ])
+
+        mock_print_function.assert_has_calls([
+            call(f'Both files have the same {checksum_algo} hash.'),
+            call(f'The hash of both files is: {expected_hash}')
+        ])
+    
+    @patch(fully_qualified_name(Checksum))
+    def test_compare_with_different_hashes(self, mock_checksum: Checksum):
+        first_path = Path(__file__)
+        second_path = Path(__file__).absolute().parent.joinpath('cli_between_test.py')
+        checksum_algo = 'sha256'
+
+        first_hash = 'sha256_hash'
+        second_hash = 'sha256_hash_different'
+
+        mock_checksum.compute_file_checksum = Mock(side_effect=[first_hash, second_hash])
+        mock_print_function = Mock()
+
+        CliChecksum(mock_checksum, mock_print_function).compare(str(first_path), str(second_path), checksum_algo)
+
+        mock_checksum.compute_file_checksum.assert_has_calls([
+            call(first_path, checksum_algo),
+            call(second_path, checksum_algo)
+        ])
+
+        mock_print_function.assert_has_calls([
+            call(f'The files have different {checksum_algo} hashes.'),
+            call(f'\t{first_path} -> {first_hash}'),
+            call(f'\t{second_path} -> {second_hash}')
+        ])
+
+    @patch(fully_qualified_name(Checksum))
+    def test_compare_with_same_paths(self, mock_checksum: Checksum):
+        first_path = str(Path(__file__))
+
+        with self.assertRaises(ValueError) as context:
+            CliChecksum(mock_checksum, Mock()).compare(first_path, first_path, 'sha256')
+
+        self.assertEqual(str(context.exception), 'The first file path and the second file path cannot refer to the same file. Specify different files and try again.')
+    
+    @patch(fully_qualified_name(Checksum))
+    def test_compare_with_invalid_path(self, mock_checksum: Checksum):
+        path = Path(__file__).absolute().parent.joinpath('missing_file.py')
+
+        with self.assertRaises(NotAFileException) as context:
+            CliChecksum(mock_checksum, Mock()).compare(str(path), str(path), 'sha256')
+
+        self.assertEqual(str(context.exception), f'The path argument [first] does not point to a file. Please check the path and try again: [{path}]')
